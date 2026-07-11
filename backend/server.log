@@ -1,0 +1,13 @@
+
+> social-app-backend@1.0.0 start
+> node server.js
+
+✅  Auto-config complete
+    Storage: Local disk (uploads/)
+    Email:   SMTP
+✅  MongoDB connected: ac-5ltro8w-shard-00-01.pdutojn.mongodb.net/Messageme
+
+🚀  Server running on http://localhost:5000
+    Health check: http://localhost:5000/api/health
+
+[0mGET /api/health [32m200[0m 14.536 ms - 82[0m
