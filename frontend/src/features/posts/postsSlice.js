@@ -32,6 +32,11 @@ export const addComment = createAsyncThunk('posts/addComment', async ({ postId, 
   return { postId, comment: data.comment };
 });
 
+export const addReply = createAsyncThunk('posts/addReply', async ({ postId, commentId, text }) => {
+  const { data } = await postsApi.addReply(postId, commentId, text);
+  return { postId, commentId, replies: data.replies };
+});
+
 const postsSlice = createSlice({
   name: 'posts',
   initialState: {
@@ -93,6 +98,16 @@ const postsSlice = createSlice({
         if (post) {
           post.comments = post.comments || [];
           post.comments.push(action.payload.comment);
+        }
+      })
+      .addCase(addReply.fulfilled, (state, action) => {
+        const post = state.items.find((p) => p._id === action.payload.postId);
+        if (post) {
+          post.comments = post.comments.map((comment) =>
+            comment._id === action.payload.commentId
+              ? { ...comment, replies: action.payload.replies }
+              : comment
+          );
         }
       });
   },

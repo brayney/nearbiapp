@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { Grid3x3, MoreVertical, X } from 'lucide-react';
+import { Grid3x3, MoreVertical, X, Bookmark } from 'lucide-react';
 import Avatar from '../components/Avatar';
 import { usersApi, postsApi } from '../api/resources';
 import { pushToast } from '../features/ui/uiSlice';
@@ -16,7 +16,10 @@ export default function ProfilePage() {
   const [followsYou, setFollowsYou] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
   const [posts, setPosts] = useState([]);
+  const [savedPosts, setSavedPosts] = useState([]);
+  const [activeTab, setActiveTab] = useState('posts');
   const [loading, setLoading] = useState(true);
+  const [savedLoading, setSavedLoading] = useState(false);
   const [followBusy, setFollowBusy] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [connections, setConnections] = useState({ type: null, users: [], loading: false });
@@ -69,6 +72,24 @@ export default function ProfilePage() {
     await dispatch(logoutUser());
     navigate('/login');
   };
+
+  const loadSavedPosts = async () => {
+    setSavedLoading(true);
+    try {
+      const response = await postsApi.getSaved();
+      setSavedPosts(response.data.posts || []);
+    } catch (err) {
+      dispatch(pushToast(err.response?.data?.message || 'Could not load saved posts.', 'error'));
+    } finally {
+      setSavedLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'saved' && isOwner) {
+      loadSavedPosts();
+    }
+  }, [activeTab, isOwner]);
 
   const openConnections = async (type) => {
     if (!profile) return;
@@ -191,11 +212,58 @@ export default function ProfilePage() {
           </button>
         </div>
 
-        <div className="flex items-center gap-2 border-t border-ink-line pt-3 mb-1 text-slate-faint text-sm">
-          <Grid3x3 size={16} /> Posts
+        <div className="mb-4 border-t border-ink-line pt-3">
+          <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.25em] text-slate-faint">
+            <button
+              type="button"
+              onClick={() => setActiveTab('posts')}
+              className={`inline-flex items-center gap-2 rounded-full px-3 py-2 transition ${activeTab === 'posts' ? 'bg-ink-soft text-paper' : 'hover:bg-ink-soft'}`}
+            >
+              <Grid3x3 size={14} />
+              Posts
+            </button>
+            {isOwner && (
+              <button
+                type="button"
+                onClick={() => setActiveTab('saved')}
+                className={`inline-flex items-center gap-2 rounded-full px-3 py-2 transition ${activeTab === 'saved' ? 'bg-ink-soft text-paper' : 'hover:bg-ink-soft'}`}
+              >
+                <Bookmark size={14} />
+                Saved
+              </button>
+            )}
+          </div>
         </div>
 
-        {posts.length === 0 ? (
+        {activeTab === 'saved' ? (
+          savedLoading ? (
+            <p className="text-slate-mute text-sm py-10">Loading saved posts...</p>
+          ) : savedPosts.length === 0 ? (
+            <p className="text-slate-faint text-sm py-10 text-center">Saved posts will appear here.</p>
+          ) : (
+            <div className="grid grid-cols-3 gap-1 pb-6">
+              {savedPosts.map((post) => (
+              <Link
+                key={post._id}
+                to={`/post/${post._id}`}
+                className="aspect-square bg-ink-soft overflow-hidden"
+              >
+                {post.media?.[0] ? (
+                  <img src={post.media[0].url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center p-2 text-xs text-slate-faint text-center">
+                    {post.caption?.slice(0, 60)}
+                  </div>
+                )}
+                {post.media?.length > 1 && (
+                  <div className="absolute right-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[11px] font-semibold text-paper">
+                    {post.media.length}
+                  </div>
+                )}
+              </Link>
+            ))}
+          </div>
+        ) : posts.length === 0 ? (
           <p className="text-slate-mute text-sm py-10 text-center">No posts yet.</p>
         ) : (
           <div className="grid grid-cols-3 gap-1 pb-6">
