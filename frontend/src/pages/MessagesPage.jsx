@@ -190,22 +190,32 @@ export default function MessagesPage() {
 
   return (
     <div className="fixed inset-x-0 top-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] overflow-hidden bg-ink text-paper md:static md:h-screen md:p-5">
-      <div className="mx-auto flex h-full max-w-6xl overflow-hidden bg-ink-soft md:min-h-[calc(100vh-40px)] md:rounded-2xl md:border md:border-ink-line">
+      <div className="mx-auto flex h-full max-w-6xl overflow-visible bg-ink-soft md:min-h-[calc(100vh-40px)] md:rounded-2xl md:border md:border-ink-line">
         <aside className={`h-full w-full shrink-0 flex-col overflow-visible border-r border-ink-line sm:w-[350px] ${activeUserId && isMobile ? 'hidden' : 'flex'}`}>
           <header className="flex h-[60px] items-center justify-center border-b border-ink-line px-5">
             <h1 className="font-display text-xl">Messages</h1>
           </header>
           <div className="border-b border-ink-line px-3 py-3">
             <div className="flex gap-3 overflow-x-auto overflow-visible pb-1">
-              <button type="button" onClick={() => setNoteEditorOpen((open) => !open)} className="w-16 shrink-0 overflow-visible text-center">
-                <div className="relative mx-auto w-fit"><Avatar src={currentUser?.profilePicture?.url} alt={currentUser?.username} size="md" /><span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-ink bg-coral text-ink"><Plus size={13} /></span></div>
-                <span className="mt-1 block truncate text-[11px] text-slate-faint">{ownNote || 'Your note'}</span>
+              <button type="button" onClick={() => setNoteEditorOpen((open) => !open)} className="relative w-20 shrink-0 overflow-visible text-center">
+                <div className="relative mx-auto mb-1 h-[56px] w-[56px] overflow-visible">
+                  {ownNote && (
+                    <div className="absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-full w-max max-w-[9rem] rounded-full bg-paper px-3 py-1.5 text-[10px] font-semibold text-ink shadow-lg">
+                      {ownNote}
+                    </div>
+                  )}
+                  <Avatar src={currentUser?.profilePicture?.url} alt={currentUser?.username} size="md" />
+                  <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-ink bg-coral text-ink">
+                    <Plus size={13} />
+                  </span>
+                </div>
+                <span className="block truncate text-[11px] text-slate-faint">{ownNote ? 'Your note' : 'Your note'}</span>
               </button>
               {following.map((user) => (
                 <button key={user.id} type="button" onClick={() => setActiveUserId(user.id)} className="relative w-20 shrink-0 overflow-visible text-center">
                   <div className="relative mx-auto mb-1 h-[56px] w-[56px] overflow-visible">
                     {user.note && (
-                      <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-full z-10 w-max rounded-full bg-paper px-2 py-1 text-[10px] leading-4 text-ink shadow-sm">
+                      <div className="absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-full w-max max-w-[9rem] rounded-full bg-paper px-3 py-1.5 text-[10px] font-semibold text-ink shadow-lg">
                         {user.note}
                       </div>
                     )}

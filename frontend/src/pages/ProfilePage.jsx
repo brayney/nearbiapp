@@ -223,12 +223,14 @@ export default function ProfilePage() {
         {profile.bio && <p className="text-[15px] mb-3 max-w-md">{profile.bio}</p>}
 
         <div className="flex gap-5 text-sm mb-6 font-mono">
-          <span className="text-slate-faint">posts</span>
+          <span>
+            <strong className="font-sans">{profile.postsCount}</strong> <span className="text-slate-faint">posts</span>
+          </span>
           <button type="button" onClick={() => openConnections('followers')} className="text-left hover:text-paper transition-colors" aria-label={`View ${profile.username}'s followers`}>
-            <span className="text-slate-faint">followers</span>
+            <strong className="font-sans">{profile.followersCount}</strong> <span className="text-slate-faint">followers</span>
           </button>
           <button type="button" onClick={() => openConnections('following')} className="text-left hover:text-paper transition-colors" aria-label={`View who ${profile.username} follows`}>
-            <span className="text-slate-faint">following</span>
+            <strong className="font-sans">{profile.followingCount}</strong> <span className="text-slate-faint">following</span>
           </button>
         </div>
 
