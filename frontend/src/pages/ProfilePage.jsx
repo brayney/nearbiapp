@@ -243,26 +243,27 @@ export default function ProfilePage() {
           ) : (
             <div className="grid grid-cols-3 gap-1 pb-6">
               {savedPosts.map((post) => (
-              <Link
-                key={post._id}
-                to={`/post/${post._id}`}
-                className="aspect-square bg-ink-soft overflow-hidden"
-              >
-                {post.media?.[0] ? (
-                  <img src={post.media[0].url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center p-2 text-xs text-slate-faint text-center">
-                    {post.caption?.slice(0, 60)}
-                  </div>
-                )}
-                {post.media?.length > 1 && (
-                  <div className="absolute right-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[11px] font-semibold text-paper">
-                    {post.media.length}
-                  </div>
-                )}
-              </Link>
-            ))}
-          </div>
+                <Link
+                  key={post._id}
+                  to={`/post/${post._id}`}
+                  className="aspect-square bg-ink-soft overflow-hidden"
+                >
+                  {post.media?.[0] ? (
+                    <img src={post.media[0].url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center p-2 text-xs text-slate-faint text-center">
+                      {post.caption?.slice(0, 60)}
+                    </div>
+                  )}
+                  {post.media?.length > 1 && (
+                    <div className="absolute right-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[11px] font-semibold text-paper">
+                      {post.media.length}
+                    </div>
+                  )}
+                </Link>
+              ))}
+            </div>
+          )
         ) : posts.length === 0 ? (
           <p className="text-slate-mute text-sm py-10 text-center">No posts yet.</p>
         ) : (
