@@ -176,6 +176,25 @@ exports.refresh = catchAsync(async (req, res, next) => {
 });
 
 // ---------------- FORGOT PASSWORD ----------------
+exports.lookupAccount = catchAsync(async (req, res) => {
+  const { identifier } = req.body;
+  const normalizedIdentifier = identifier.toLowerCase();
+  const user = await User.findOne({
+    $or: [{ email: normalizedIdentifier }, { username: normalizedIdentifier }],
+  }).select('username displayName profilePicture.url');
+
+  return res.status(200).json({
+    success: true,
+    account: user
+      ? {
+          username: user.username,
+          displayName: user.displayName,
+          profilePicture: user.profilePicture?.url || '',
+        }
+      : null,
+  });
+});
+
 exports.forgotPassword = catchAsync(async (req, res, next) => {
   const { identifier, birthday, favoritePet } = req.body;
   const normalizedIdentifier = identifier.toLowerCase();

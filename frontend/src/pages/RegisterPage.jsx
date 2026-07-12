@@ -155,7 +155,7 @@ export default function RegisterPage() {
             <button
               type="button"
               onClick={prevStep}
-              className="rounded-xl border border-ink-line bg-ink-soft px-5 py-2.5 text-[15px] font-semibold text-paper transition-colors hover:bg-ink/80"
+              className="inline-flex rounded-xl border border-ink-line bg-ink-soft px-5 py-2.5 text-sm font-semibold text-paper transition duration-200 hover:bg-ink/80 sm:max-w-[160px]"
             >
               Back
             </button>
@@ -164,7 +164,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={status === 'loading'}
-            className="w-full rounded-xl bg-coral py-2.5 font-semibold text-ink transition-colors hover:bg-coral-dim disabled:opacity-50 sm:w-auto"
+            className="inline-flex w-full justify-center rounded-xl bg-coral py-2.5 px-6 text-sm font-semibold text-ink transition duration-200 hover:bg-coral-dim disabled:opacity-50 sm:w-auto sm:max-w-[220px]"
           >
             {step < STEP_TITLES.length - 1
               ? 'Proceed'

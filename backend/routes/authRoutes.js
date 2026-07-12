@@ -47,6 +47,16 @@ router.post('/logout', protect, authController.logout);
 router.post('/refresh', authController.refresh);
 
 router.post(
+  '/lookup-account',
+  authLimiter,
+  [
+    body('identifier').trim().notEmpty().withMessage('Email or username is required'),
+  ],
+  validate,
+  authController.lookupAccount
+);
+
+router.post(
   '/forgot-password',
   authLimiter,
   [
