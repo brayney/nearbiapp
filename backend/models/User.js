@@ -69,6 +69,10 @@ const userSchema = new mongoose.Schema(
     birthday: { type: Date },
     nationality: { type: String, trim: true, maxlength: 60, default: '' },
     recoveryPetHash: { type: String, select: false },
+    note: {
+      text: { type: String, trim: true, maxlength: 60, default: '' },
+      expiresAt: { type: Date, default: null },
+    },
     location: locationSchema,
     locationLabel: { type: String, default: '' }, // human-readable, e.g. "Ormoc City, PH"
     interests: [{ type: String, trim: true }],

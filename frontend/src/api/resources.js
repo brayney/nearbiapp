@@ -28,6 +28,7 @@ export const postsApi = {
 export const usersApi = {
   getProfile: (username) => api.get(`/users/${username}`),
   updateProfile: (payload) => api.patch('/users/me', payload),
+  updateNote: (payload) => api.patch('/users/me/note', payload),
   updatePrivacy: (payload) => api.patch('/users/me/privacy', payload),
   getPrivacy: () => api.get('/users/me/privacy'),
   updateLocation: (longitude, latitude) => api.patch('/users/me/location', { longitude, latitude }),
@@ -48,6 +49,13 @@ export const messagesApi = {
   getConversation: (userId) => api.get(`/messages/${userId}`),
   sendMessage: (userId, formData) => api.post(`/messages/${userId}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   markRead: (conversationId) => api.post(`/messages/${conversationId}/read`),
+};
+
+export const storiesApi = {
+  getAll: () => api.get('/stories'),
+  create: (formData) => api.post('/stories', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  view: (storyId) => api.get(`/stories/${storyId}`),
+  remove: (storyId) => api.delete(`/stories/${storyId}`),
 };
 
 export const notificationsApi = {

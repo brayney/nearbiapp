@@ -6,6 +6,7 @@ const { createNotification } = require('../utils/notifications');
 const { normalizeUploadedFile } = require('../utils/upload');
 
 const participantFields = 'username displayName profilePicture isOnline lastActive privacySettings followers';
+const followingFields = 'username displayName profilePicture isOnline lastActive note';
 
 function canMessage(sender, recipient) {
   const policy = recipient.privacySettings?.whoCanMessage || 'everyone';
@@ -47,7 +48,20 @@ exports.getConversations = catchAsync(async (req, res) => {
     if (message.receiver._id.equals(userId) && !message.readAt) byParticipant.get(id).unread += 1;
   });
 
-  res.status(200).json({ success: true, conversations: [...byParticipant.values()] });
+  const following = await User.find({ _id: { $in: req.user.following || [] } })
+    .select(followingFields)
+    .sort({ username: 1 });
+  const now = new Date();
+  const followingUsers = following.map((user) => ({
+    id: String(user._id),
+    username: user.username,
+    displayName: user.displayName,
+    profilePicture: user.profilePicture,
+    isOnline: user.isOnline,
+    note: user.note?.expiresAt && user.note.expiresAt > now ? user.note.text : '',
+  }));
+
+  res.status(200).json({ success: true, conversations: [...byParticipant.values()], following: followingUsers });
 });
 
 exports.getConversation = catchAsync(async (req, res, next) => {

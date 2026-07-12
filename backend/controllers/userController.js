@@ -65,6 +65,15 @@ exports.getPrivacySettings = catchAsync(async (req, res, next) => {
   res.status(200).json({ success: true, privacySettings: user.privacySettings });
 });
 
+exports.updateNote = catchAsync(async (req, res, next) => {
+  const text = req.body.text?.trim() || '';
+  if (text.length > 60) return next(new ApiError(400, 'Notes cannot exceed 60 characters.'));
+
+  const note = text ? { text, expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) } : { text: '', expiresAt: null };
+  const user = await User.findByIdAndUpdate(req.user._id, { note }, { new: true });
+  res.status(200).json({ success: true, note: user.note });
+});
+
 exports.uploadAvatar = catchAsync(async (req, res, next) => {
   if (!req.file) return next(new ApiError(400, 'No file uploaded.'));
 

@@ -91,7 +91,7 @@ export default function AppShell() {
   });
 
   const showMobileCreate = ['/','/explore'].includes(location.pathname);
-  const mobileNavItems = [navItems[0], navItems[1], navItems[5], navItems[4]];
+  const mobileNavItems = [navItems[0], navItems[1], navItems[3], navItems[5], navItems[4]];
 
   return (
     <div className="flex min-h-[100dvh] bg-ink text-paper md:h-screen md:overflow-hidden">

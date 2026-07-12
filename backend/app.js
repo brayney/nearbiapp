@@ -13,6 +13,7 @@ const userRoutes = require('./routes/userRoutes');
 const postRoutes = require('./routes/postRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const storyRoutes = require('./routes/storyRoutes');
 
 function createApp() {
   const app = express();
@@ -65,6 +66,7 @@ function createApp() {
   app.use('/api/posts', postRoutes);
   app.use('/api/messages', messageRoutes);
   app.use('/api/notifications', notificationRoutes);
+  app.use('/api/stories', storyRoutes);
 
   app.use(notFound);
   app.use(errorHandler);

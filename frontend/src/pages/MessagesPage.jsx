@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Image, Info, Send, X } from 'lucide-react';
+import { Image, Info, Plus, Send, X } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import Avatar from '../components/Avatar';
-import { messagesApi } from '../api/resources';
+import { messagesApi, usersApi } from '../api/resources';
 import { pushToast } from '../features/ui/uiSlice';
 
 function formatTime(value) {
@@ -19,6 +19,7 @@ export default function MessagesPage() {
   const dispatch = useDispatch();
   const currentUser = useSelector((state) => state.auth.user);
   const [conversations, setConversations] = useState([]);
+  const [following, setFollowing] = useState([]);
   const [activeUserId, setActiveUserId] = useState(searchParams.get('user'));
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 640 : false);
   const [participant, setParticipant] = useState(null);
@@ -27,11 +28,32 @@ export default function MessagesPage() {
   const [mediaFile, setMediaFile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [threadError, setThreadError] = useState('');
+  const [noteEditorOpen, setNoteEditorOpen] = useState(false);
+  const [noteText, setNoteText] = useState('');
+  const [ownNote, setOwnNote] = useState('');
+  const [savingNote, setSavingNote] = useState(false);
   const bottomRef = useRef(null);
 
   const loadConversations = async () => {
     const { data } = await messagesApi.getConversations();
     setConversations(data.conversations || []);
+    setFollowing(data.following || []);
+  };
+
+  const saveNote = async (event) => {
+    event.preventDefault();
+    setSavingNote(true);
+    try {
+      await usersApi.updateNote({ text: noteText });
+      setOwnNote(noteText.trim());
+      setNoteText('');
+      setNoteEditorOpen(false);
+      dispatch(pushToast('Your note will disappear after 24 hours.', 'success'));
+    } catch (err) {
+      dispatch(pushToast(err.response?.data?.message || 'Could not save note.', 'error'));
+    } finally {
+      setSavingNote(false);
+    }
   };
 
   useEffect(() => {
@@ -165,6 +187,26 @@ export default function MessagesPage() {
           <header className="flex h-[60px] items-center justify-center border-b border-ink-line px-5">
             <h1 className="font-display text-xl">Messages</h1>
           </header>
+          <div className="border-b border-ink-line px-3 py-3">
+            <div className="flex gap-3 overflow-x-auto pb-1">
+              <button type="button" onClick={() => setNoteEditorOpen((open) => !open)} className="w-16 shrink-0 text-center">
+                <div className="relative mx-auto w-fit"><Avatar src={currentUser?.profilePicture?.url} alt={currentUser?.username} size="md" /><span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-ink bg-coral text-ink"><Plus size={13} /></span></div>
+                <span className="mt-1 block truncate text-[11px] text-slate-faint">{ownNote || 'Your note'}</span>
+              </button>
+              {following.map((user) => (
+                <button key={user.id} type="button" onClick={() => setActiveUserId(user.id)} className="w-16 shrink-0 text-center">
+                  <div className="relative mx-auto w-fit"><Avatar src={user.profilePicture?.url} alt={user.username} size="md" online={user.isOnline} />{user.note && <span className="absolute -right-8 -top-3 w-20 rounded-lg bg-paper px-1 py-0.5 text-[10px] leading-3 text-ink shadow">{user.note}</span>}</div>
+                  <span className="mt-1 block truncate text-[11px] text-slate-faint">{user.username}</span>
+                </button>
+              ))}
+            </div>
+            {noteEditorOpen && (
+              <form onSubmit={saveNote} className="mt-3 flex gap-2">
+                <input value={noteText} onChange={(event) => setNoteText(event.target.value)} maxLength={60} placeholder="Share a short note…" className="min-w-0 flex-1 rounded-xl border border-ink-line bg-ink px-3 py-2 text-sm outline-none focus:border-teal-bright" autoFocus />
+                <button type="submit" disabled={savingNote || !noteText.trim()} className="rounded-xl bg-coral px-3 text-sm font-semibold text-ink disabled:opacity-50">{savingNote ? '…' : 'Post'}</button>
+              </form>
+            )}
+          </div>
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           {loading ? (
             <p className="p-5 text-sm text-slate-faint">Loading messages…</p>

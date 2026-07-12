@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { ArrowLeft } from 'lucide-react';
 import Avatar from '../components/Avatar';
 import FormInput from '../components/FormInput';
 import { usersApi } from '../api/resources';
@@ -33,7 +34,12 @@ export default function SettingsPage() {
   return (
     <div className="max-w-xl mx-auto px-4 py-6">
       <header className="sticky top-0 z-10 -mx-4 mb-8 border-b border-ink-line bg-ink/95 px-4 pt-4 backdrop-blur">
-      <h1 className="font-display text-2xl mb-5">Settings</h1>
+      <div className="mb-5 flex items-center gap-3">
+        <Link to={`/profile/${user?.username}`} className="rounded-full p-2 text-slate-faint hover:bg-ink-soft hover:text-paper" aria-label="Back to profile">
+          <ArrowLeft size={20} />
+        </Link>
+        <h1 className="font-display text-2xl">Settings</h1>
+      </div>
       <div className="flex gap-1 border-b border-ink-line">
         {TABS.map((t) => (
           <button
