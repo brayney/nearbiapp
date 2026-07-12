@@ -5,7 +5,7 @@ const catchAsync = require('../utils/catchAsync');
 const { createNotification } = require('../utils/notifications');
 const { normalizeUploadedFile } = require('../utils/upload');
 
-const participantFields = 'username displayName profilePicture isOnline lastActive privacySettings followers';
+const participantFields = 'username displayName profilePicture isOnline lastActive privacySettings followers following';
 const followingFields = 'username displayName profilePicture isOnline lastActive note';
 
 function canMessage(sender, recipient) {
@@ -85,7 +85,7 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
   if (!recipient) return next(new ApiError(404, 'User not found.'));
   if (!canMessage(req.user, recipient)) return next(new ApiError(403, 'This user is not accepting messages from you.'));
 
-  const isRecipientFollowingSender = recipient.following.some((id) => id.equals(req.user._id));
+  const isRecipientFollowingSender = (recipient.following || []).some((id) => id.equals(req.user._id));
   const messageStatus = isRecipientFollowingSender ? 'inbox' : 'request';
 
   const uploaded = req.file ? normalizeUploadedFile(req.file) : null;

@@ -16,6 +16,7 @@ import {
   X,
 } from 'lucide-react';
 import Avatar from './Avatar';
+import Logo from './Logo';
 import SiteFooter from './SiteFooter';
 import { logoutUser } from '../features/auth/authSlice';
 import { openCreatePost } from '../features/ui/uiSlice';
@@ -103,17 +104,14 @@ export default function AppShell() {
 
   const showMobileCreate = ['/feed', '/explore'].includes(location.pathname);
   const showBurger = true;
-  const mobileNavItems = [navItems[0], navItems[1], navItems[3], navItems[5], navItems[4], navItems[7]];
+  const mobileNavItems = [navItems[0], navItems[1], navItems[3], navItems[5], navItems[4]];
 
   return (
     <div className="flex min-h-[100dvh] bg-ink text-paper md:h-screen md:overflow-hidden">
       {/* Desktop / tablet sidebar */}
       <aside className="hidden h-[100dvh] shrink-0 overflow-y-auto border-r border-ink-line px-2 py-6 md:flex md:flex-col md:w-[76px] lg:w-64 lg:px-4">
-        <div className="px-2 mb-8 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-coral flex items-center justify-center font-display text-ink font-semibold">
-            n
-          </div>
-          <span className="hidden lg:inline font-display text-xl tracking-tight">nearbi</span>
+        <div className="px-2 mb-8">
+          <Logo className="text-sm" compact={false} />
         </div>
 
         <nav className="flex flex-col gap-1 flex-1">
@@ -179,10 +177,7 @@ export default function AppShell() {
           <button type="button" className="absolute inset-0 bg-black/60" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu" />
           <aside className="relative flex h-full w-[min(20rem,85vw)] flex-col border-r border-ink-line bg-ink p-5 shadow-2xl">
             <div className="mb-8 flex items-center justify-between">
-              <div className="flex items-center gap-2 font-display text-xl">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-coral font-semibold text-ink">n</span>
-                nearbi
-              </div>
+                <Logo compact={true} />
               <button type="button" onClick={() => setMobileMenuOpen(false)} className="rounded-xl p-2 text-slate-faint hover:bg-ink-soft hover:text-paper" aria-label="Close menu">
                 <X size={22} />
               </button>
@@ -211,13 +206,6 @@ export default function AppShell() {
                   {item.badge > 0 && <span className="ml-auto rounded-full bg-coral px-2 py-0.5 text-xs font-semibold text-ink">{item.badge}</span>}
                 </NavLink>
               ))}
-              <NavLink
-                to="/settings"
-                className={({ isActive }) => `flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors ${isActive ? 'bg-ink-soft text-paper' : 'text-slate-faint hover:bg-ink-soft hover:text-paper'}`}
-              >
-                <Settings size={20} strokeWidth={1.75} />
-                Settings
-              </NavLink>
             </nav>
             <button type="button" onClick={handleLogout} className="mt-auto flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-coral transition-colors hover:bg-ink-soft">
               <LogOut size={20} />

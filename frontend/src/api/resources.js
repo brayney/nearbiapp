@@ -48,7 +48,7 @@ export const usersApi = {
 export const messagesApi = {
   getConversations: () => api.get('/messages/conversations'),
   getConversation: (userId) => api.get(`/messages/${userId}`),
-  sendMessage: (userId, formData) => api.post(`/messages/${userId}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  sendMessage: (userId, formData) => api.post(`/messages/${userId}`, formData),
   markRead: (conversationId) => api.post(`/messages/${conversationId}/read`),
 };
 

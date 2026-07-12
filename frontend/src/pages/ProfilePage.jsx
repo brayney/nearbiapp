@@ -31,7 +31,13 @@ export default function ProfilePage() {
   const isOwner = Boolean(
     profile &&
     currentUser &&
-    (profile.username === currentUser.username || profile.id === currentUser.id || profile._id === currentUser._id)
+    (
+      (profile.username || '').toLowerCase() === (currentUser.username || '').toLowerCase() ||
+      profile.id === currentUser.id ||
+      profile.id === currentUser._id ||
+      profile._id === currentUser.id ||
+      profile._id === currentUser._id
+    )
   );
   const menuRef = useRef(null);
 
