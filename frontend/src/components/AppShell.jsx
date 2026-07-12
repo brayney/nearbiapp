@@ -12,6 +12,7 @@ import {
   Radar,
 } from 'lucide-react';
 import Avatar from './Avatar';
+import SiteFooter from './SiteFooter';
 import { logoutUser } from '../features/auth/authSlice';
 import { openCreatePost } from '../features/ui/uiSlice';
 import { messagesApi, notificationsApi } from '../api/resources';
@@ -131,8 +132,11 @@ export default function AppShell() {
       </aside>
 
       {/* Main content */}
-      <main className="h-[100dvh] min-w-0 flex-1 overflow-y-auto pb-[calc(5rem+env(safe-area-inset-bottom))] md:h-screen md:pb-0">
-        <Outlet />
+      <main className="flex h-[100dvh] min-w-0 flex-1 flex-col overflow-y-auto pb-[calc(5rem+env(safe-area-inset-bottom))] md:h-screen md:pb-0">
+        <div className="flex-1">
+          <Outlet />
+        </div>
+        <SiteFooter />
       </main>
 
       {/* Mobile floating create button */}
