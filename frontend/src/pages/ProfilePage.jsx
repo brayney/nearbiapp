@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { Grid3x3, Settings, Repeat, X, Bookmark } from 'lucide-react';
+import { Grid3x3, Settings, Repeat, X, Bookmark, Plus } from 'lucide-react';
 import Avatar from '../components/Avatar';
 import { usersApi, postsApi } from '../api/resources';
 import { pushToast } from '../features/ui/uiSlice';
@@ -149,212 +149,227 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="h-40 md:h-56 bg-ink-soft relative">
-        {profile.coverPhoto?.url && (
-          <img src={profile.coverPhoto.url} alt="" className="w-full h-full object-cover" />
-        )}
-      </div>
-
-      <div className="px-4 md:px-0">
-        <div className="flex items-end justify-between -mt-10 mb-4 overflow-visible">
-          <div className="relative overflow-visible">
-            {profile.note && (
-              <div className="absolute -top-5 left-1/2 z-20 w-max -translate-x-1/2 rounded-full bg-paper/95 px-4 py-2 text-xs font-semibold text-ink shadow-2xl">
-                {profile.note}
-              </div>
-            )}
-            <Avatar
-              src={profile.profilePicture?.url}
-              alt={profile.username}
-              size="xl"
-              online={profile.isOnline}
-              className="border-4 border-ink rounded-full"
-            />
-          </div>
-          {isOwner ? null : (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleFollowToggle}
-                disabled={followBusy}
-                className={`text-sm font-semibold rounded-xl px-4 py-2 transition-colors ${
-                  isFollowing ? 'border border-ink-line hover:bg-ink-soft' : 'bg-coral text-ink hover:bg-coral-dim'
-                }`}
-              >
-                {isFollowing ? 'Following' : followsYou ? 'Follow Back' : 'Follow'}
-              </button>
-              <Link
-                to={`/messages?user=${profile.id || profile._id}`}
-                className="text-sm font-semibold rounded-xl border border-ink-line px-4 py-2 hover:bg-ink-soft"
-              >
-                Message
-              </Link>
-            </div>
-          )}
-        </div>
-
-        <div className="flex items-start justify-between gap-3">
-          <h1 className="font-display text-xl flex items-center gap-2">
-            {profile.displayName || profile.username}
-          </h1>
-          {isOwner && (
-            <div className="relative -mt-1" ref={menuRef}>
-              <button
-                type="button"
-                onClick={() => setShowProfileMenu((open) => !open)}
-                className="rounded-full p-2 text-slate-faint transition hover:bg-ink-soft hover:text-paper"
-                aria-label="Open profile actions"
-                aria-expanded={showProfileMenu}
-              >
-                <Settings size={20} />
-              </button>
-              {showProfileMenu && (
-                <div className="absolute right-0 z-10 mt-2 w-48 overflow-hidden rounded-2xl border border-ink-line bg-ink py-2 shadow-xl">
-                  <Link to="/settings" onClick={() => setShowProfileMenu(false)} className="block px-4 py-2 text-sm text-paper hover:bg-ink-soft">Settings</Link>
-                  <Link to="/settings?tab=Privacy" onClick={() => setShowProfileMenu(false)} className="block px-4 py-2 text-sm text-paper hover:bg-ink-soft">Privacy</Link>
-                  <button type="button" onClick={handleLogout} className="w-full text-left px-4 py-2 text-sm text-coral hover:bg-ink-soft">Log out</button>
+    <div className="min-h-screen bg-ink text-paper">
+      <div className="mx-auto max-w-3xl px-4 pb-24">
+        <div className="pt-6">
+          <div className="flex flex-wrap items-start gap-5">
+            <div className="relative">
+              <Avatar
+                src={profile.profilePicture?.url}
+                alt={profile.username}
+                size="xl"
+                online={profile.isOnline}
+                className="border-4 border-ink rounded-full"
+              />
+              {isOwner && (
+                <div className="absolute -right-0 top-0 flex h-8 w-8 items-center justify-center rounded-full border border-ink-line bg-ink-soft text-slate-faint">
+                  <Plus size={16} />
                 </div>
               )}
             </div>
-          )}
-        </div>
-        <p className="text-slate-faint text-sm mb-3">@{profile.username}</p>
-        {followsYou && <p className="text-sm text-coral mb-2">Follows you</p>}
-        {profile.bio && <p className="text-[15px] mb-3 max-w-md">{profile.bio}</p>}
 
-        <div className="mb-6 grid grid-cols-3 overflow-hidden rounded-xl border border-ink-line bg-ink-soft text-center">
-          <div className="border-r border-ink-line px-2 py-3">
-            <strong className="block font-sans text-base tabular-nums text-paper">{profile.postsCount ?? 0}</strong>
-            <span className="text-xs text-slate-faint">Posts</span>
-          </div>
-          <button type="button" onClick={() => openConnections('followers')} className="border-r border-ink-line px-2 py-3 transition hover:bg-ink" aria-label={`View ${profile.username}'s followers`}>
-            <strong className="block font-sans text-base tabular-nums text-paper">{profile.followersCount ?? 0}</strong>
-            <span className="text-xs text-slate-faint">Followers</span>
-          </button>
-          <button type="button" onClick={() => openConnections('following')} className="px-2 py-3 transition hover:bg-ink" aria-label={`View who ${profile.username} follows`}>
-            <strong className="block font-sans text-base tabular-nums text-paper">{profile.followingCount ?? 0}</strong>
-            <span className="text-xs text-slate-faint">Following</span>
-          </button>
-        </div>
+            <div className="flex-1 min-w-[220px]">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="text-2xl font-semibold tracking-tight">{profile.displayName || profile.username}</span>
+                <span className="text-sm text-slate-faint">@{profile.username}</span>
+              </div>
+              {followsYou && <p className="mt-2 text-sm text-coral">Follows you</p>}
+              {profile.bio && <p className="mt-3 text-sm text-slate-faint max-w-2xl">{profile.bio}</p>}
+            </div>
 
-        <div className="mb-4 border-t border-ink-line pt-3">
-          <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.25em] text-slate-faint">
-            <button
-              type="button"
-              onClick={() => setActiveTab('posts')}
-              className={`inline-flex items-center gap-2 rounded-full px-3 py-2 transition ${activeTab === 'posts' ? 'bg-ink-soft text-paper' : 'hover:bg-ink-soft'}`}
-            >
-              <Grid3x3 size={14} />
-              Posts
-            </button>
-            {isOwner && (
-              <>
+            {isOwner ? null : (
+              <div className="flex flex-wrap gap-3">
                 <button
-                  type="button"
-                  onClick={() => setActiveTab('saved')}
-                  className={`inline-flex items-center gap-2 rounded-full px-3 py-2 transition ${activeTab === 'saved' ? 'bg-ink-soft text-paper' : 'hover:bg-ink-soft'}`}
+                  onClick={handleFollowToggle}
+                  disabled={followBusy}
+                  className={`min-w-[120px] rounded-2xl px-4 py-2 text-sm font-semibold transition ${
+                    isFollowing ? 'border border-ink-line bg-ink-soft text-paper hover:bg-ink/80' : 'bg-coral text-ink hover:bg-coral-dim'
+                  }`}
                 >
-                  <Bookmark size={14} />
-                  Saved
+                  {isFollowing ? 'Following' : followsYou ? 'Follow Back' : 'Follow'}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('reposts')}
-                  className={`inline-flex items-center gap-2 rounded-full px-3 py-2 transition ${activeTab === 'reposts' ? 'bg-ink-soft text-paper' : 'hover:bg-ink-soft'}`}
+                <Link
+                  to={`/messages?user=${profile.id || profile._id}`}
+                  className="min-w-[120px] rounded-2xl border border-ink-line bg-ink-soft px-4 py-2 text-sm font-semibold text-paper transition hover:bg-ink"
                 >
-                  <Repeat size={14} />
-                  Reposts
-                </button>
-              </>
+                  Message
+                </Link>
+              </div>
             )}
           </div>
-        </div>
 
-        {activeTab === 'saved' ? (
-          savedLoading ? (
-            <p className="text-slate-mute text-sm py-10">Loading saved posts...</p>
-          ) : savedPosts.length === 0 ? (
-            <p className="text-slate-faint text-sm py-10 text-center">Saved posts will appear here.</p>
-          ) : (
-            <div className="grid grid-cols-3 gap-1 pb-6">
-              {savedPosts.map((post) => (
-                <Link
-                  key={post._id}
-                  to={`/post/${post._id}`}
-                  className="aspect-square bg-ink-soft overflow-hidden"
-                >
-                  {post.media?.[0] ? (
-                    <img src={post.media[0].url} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center p-2 text-xs text-slate-faint text-center">
-                      {post.caption?.slice(0, 60)}
-                    </div>
-                  )}
-                  {post.media?.length > 1 && (
-                    <div className="absolute right-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[11px] font-semibold text-paper">
-                      {post.media.length}
-                    </div>
-                  )}
-                </Link>
-              ))}
+          <div className="mt-6 grid grid-cols-3 gap-3 text-center">
+            <div className="rounded-2xl border border-ink-line bg-ink-soft px-4 py-4">
+              <p className="text-lg font-semibold text-paper">{profile.postsCount ?? 0}</p>
+              <p className="text-xs uppercase tracking-[0.28em] text-slate-faint">Posts</p>
             </div>
-          )
-        ) : activeTab === 'reposts' ? (
-          repostsLoading ? (
-            <p className="text-slate-mute text-sm py-10">Loading reposts...</p>
-          ) : reposts.length === 0 ? (
-            <p className="text-slate-faint text-sm py-10 text-center">Reposts will appear here once you share a post.</p>
-          ) : (
-            <div className="grid grid-cols-3 gap-1 pb-6">
-              {reposts.map((post) => (
-                <Link
-                  key={post._id}
-                  to={`/post/${post._id}`}
-                  className="aspect-square bg-ink-soft overflow-hidden"
-                >
-                  {post.media?.[0] ? (
-                    <img src={post.media[0].url} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center p-2 text-xs text-slate-faint text-center">
-                      {post.caption?.slice(0, 60)}
-                    </div>
-                  )}
-                  {post.media?.length > 1 && (
-                    <div className="absolute right-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[11px] font-semibold text-paper">
-                      {post.media.length}
-                    </div>
-                  )}
-                </Link>
-              ))}
-            </div>
-          )
-        ) : posts.length === 0 ? (
-          <p className="text-slate-mute text-sm py-10 text-center">No posts yet.</p>
-        ) : (
-          <div className="grid grid-cols-3 gap-1 pb-6">
-            {posts.map((post) => (
-              <Link
-                key={post._id}
-                to={`/post/${post._id}`}
-                className="aspect-square bg-ink-soft overflow-hidden"
-              >
-                {post.media?.[0] ? (
-                  <img src={post.media[0].url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center p-2 text-xs text-slate-faint text-center">
-                    {post.caption?.slice(0, 60)}
-                  </div>
-                )}
-                {post.media?.length > 1 && (
-                  <div className="absolute right-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[11px] font-semibold text-paper">
-                    {post.media.length}
-                  </div>
-                )}
-              </Link>
-            ))}
+            <button
+              type="button"
+              onClick={() => openConnections('followers')}
+              className="rounded-2xl border border-ink-line bg-ink-soft px-4 py-4 text-left transition hover:bg-ink"
+            >
+              <p className="text-lg font-semibold text-paper">{profile.followersCount ?? 0}</p>
+              <p className="text-xs uppercase tracking-[0.28em] text-slate-faint">Followers</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => openConnections('following')}
+              className="rounded-2xl border border-ink-line bg-ink-soft px-4 py-4 text-left transition hover:bg-ink"
+            >
+              <p className="text-lg font-semibold text-paper">{profile.followingCount ?? 0}</p>
+              <p className="text-xs uppercase tracking-[0.28em] text-slate-faint">Following</p>
+            </button>
           </div>
-        )}
-      </div>
+
+          <div className="mt-6 rounded-3xl border border-ink-line bg-[#101010] p-4">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm uppercase tracking-[0.28em] text-slate-faint">Professional dashboard</p>
+                <p className="mt-2 text-sm font-semibold">246 views in the last 30 days.</p>
+              </div>
+              <button className="rounded-2xl border border-ink-line px-4 py-2 text-sm font-semibold text-paper hover:bg-ink-soft">View</button>
+            </div>
+          </div>
+
+          <div className="mt-6 overflow-x-auto pb-3">
+            <div className="flex gap-4">
+              <button className="min-w-[96px] rounded-3xl border border-ink-line bg-ink-soft px-4 py-3 text-sm font-semibold text-paper transition hover:bg-ink">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-ink-line">+</span>
+                <span className="mt-2 block text-xs text-slate-faint">New</span>
+              </button>
+
+              <div className="min-w-[96px] rounded-3xl border border-ink-line bg-ink-soft px-4 py-3 text-center">
+                <div className="mx-auto mb-2 h-10 w-10 overflow-hidden rounded-full border border-ink-line">
+                  <img src={profile.profilePicture?.url} alt={profile.username} className="h-full w-full object-cover" />
+                </div>
+                <span className="text-xs text-slate-faint">{profile.displayName || profile.username}</span>
+              </div>
+
+              <div className="min-w-[96px] rounded-3xl border border-ink-line bg-ink-soft px-4 py-3 text-center">
+                <div className="mx-auto mb-2 h-10 w-10 rounded-full border border-ink-line bg-slate-900" />
+                <span className="text-xs text-slate-faint">shesh</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 border-t border-ink-line pt-4">
+            <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.28em] text-slate-faint">
+              <button
+                type="button"
+                onClick={() => setActiveTab('posts')}
+                className={`rounded-full px-4 py-2 transition ${activeTab === 'posts' ? 'bg-ink-soft text-paper' : 'hover:bg-ink-soft'}`}
+              >
+                <Grid3x3 size={14} />
+                Posts
+              </button>
+              {isOwner && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('saved')}
+                    className={`rounded-full px-4 py-2 transition ${activeTab === 'saved' ? 'bg-ink-soft text-paper' : 'hover:bg-ink-soft'}`}
+                  >
+                    <Bookmark size={14} />
+                    Saved
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('reposts')}
+                    className={`rounded-full px-4 py-2 transition ${activeTab === 'reposts' ? 'bg-ink-soft text-paper' : 'hover:bg-ink-soft'}`}
+                  >
+                    <Repeat size={14} />
+                    Reposts
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+
+          {activeTab === 'saved' ? (
+            savedLoading ? (
+              <p className="text-slate-mute text-sm py-10">Loading saved posts...</p>
+            ) : savedPosts.length === 0 ? (
+              <p className="text-slate-faint text-sm py-10 text-center">Saved posts will appear here.</p>
+            ) : (
+              <div className="grid grid-cols-3 gap-1 pb-6">
+                {savedPosts.map((post) => (
+                  <Link
+                    key={post._id}
+                    to={`/post/${post._id}`}
+                    className="aspect-square bg-ink-soft overflow-hidden"
+                  >
+                    {post.media?.[0] ? (
+                      <img src={post.media[0].url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center p-2 text-xs text-slate-faint text-center">
+                        {post.caption?.slice(0, 60)}
+                      </div>
+                    )}
+                    {post.media?.length > 1 && (
+                      <div className="absolute right-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[11px] font-semibold text-paper">
+                        {post.media.length}
+                      </div>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            )
+          ) : activeTab === 'reposts' ? (
+            repostsLoading ? (
+              <p className="text-slate-mute text-sm py-10">Loading reposts...</p>
+            ) : reposts.length === 0 ? (
+              <p className="text-slate-faint text-sm py-10 text-center">Reposts will appear here once you share a post.</p>
+            ) : (
+              <div className="grid grid-cols-3 gap-1 pb-6">
+                {reposts.map((post) => (
+                  <Link
+                    key={post._id}
+                    to={`/post/${post._id}`}
+                    className="aspect-square bg-ink-soft overflow-hidden"
+                  >
+                    {post.media?.[0] ? (
+                      <img src={post.media[0].url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center p-2 text-xs text-slate-faint text-center">
+                        {post.caption?.slice(0, 60)}
+                      </div>
+                    )}
+                    {post.media?.length > 1 && (
+                      <div className="absolute right-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[11px] font-semibold text-paper">
+                        {post.media.length}
+                      </div>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            )
+          ) : posts.length === 0 ? (
+            <p className="text-slate-mute text-sm py-10 text-center">No posts yet.</p>
+          ) : (
+            <div className="grid grid-cols-3 gap-1 pb-6">
+              {posts.map((post) => (
+                <Link
+                  key={post._id}
+                  to={`/post/${post._id}`}
+                  className="aspect-square bg-ink-soft overflow-hidden"
+                >
+                  {post.media?.[0] ? (
+                    <img src={post.media[0].url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center p-2 text-xs text-slate-faint text-center">
+                      {post.caption?.slice(0, 60)}
+                    </div>
+                  )}
+                  {post.media?.length > 1 && (
+                    <div className="absolute right-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[11px] font-semibold text-paper">
+                      {post.media.length}
+                    </div>
+                  )}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
 
       {connections.type && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-labelledby="connections-title" onMouseDown={closeConnections}>

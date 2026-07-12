@@ -100,7 +100,7 @@ export default function AppShell() {
   });
 
   const showMobileCreate = ['/feed', '/explore'].includes(location.pathname);
-  const showBurger = location.pathname === '/feed';
+  const showBurger = /^\/feed(?:\/|$)/.test(location.pathname);
   const mobileNavItems = [navItems[0], navItems[1], navItems[3], navItems[5], navItems[4]];
 
   return (
@@ -164,11 +164,11 @@ export default function AppShell() {
         <button
           type="button"
           onClick={() => setMobileMenuOpen(true)}
-          className="fixed top-[calc(0.75rem+env(safe-area-inset-top))] right-4 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-ink/95 text-paper shadow-xl shadow-black/20 md:hidden"
+          className="fixed top-2 right-2 z-50 p-0 text-paper bg-transparent border-none md:hidden"
           aria-label="Open menu"
           aria-expanded={mobileMenuOpen}
         >
-          <Menu size={22} />
+          <Menu size={24} />
         </button>
       )}
 
