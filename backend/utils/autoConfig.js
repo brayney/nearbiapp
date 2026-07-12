@@ -67,7 +67,7 @@ function autoConfigure() {
   process.env.JWT_ACCESS_EXPIRES = process.env.JWT_ACCESS_EXPIRES || '15m';
   process.env.JWT_REFRESH_EXPIRES = process.env.JWT_REFRESH_EXPIRES || '30d';
   process.env.CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
-  process.env.EMAIL_FROM = process.env.EMAIL_FROM || 'no-reply@socialapp.local';
+  process.env.EMAIL_FROM = process.env.EMAIL_FROM || 'bryneborinaga15@gmail.com';
 
   const usingCloudinary = !!(
     process.env.CLOUDINARY_CLOUD_NAME &&
@@ -78,6 +78,7 @@ function autoConfigure() {
 
   console.log('✅  Auto-config complete');
   console.log(`    Storage: ${usingCloudinary ? 'Cloudinary' : 'Local disk (uploads/)'}`);
+  console.log(`    Backend: ${process.env.BACKEND_URL}`);
   console.log(`    Email:   ${usingSMTP ? 'SMTP' : 'Console logging (dev mode)'}`);
 
   return { usingCloudinary, usingSMTP };
