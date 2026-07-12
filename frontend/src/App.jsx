@@ -72,6 +72,11 @@ export default function App() {
             <Route path="/notifications" element={<NotificationsPage />} />
           </Route>
           <Route path="/" element={<LandingPage />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+        <ToastStack />
+        <CreatePostModal />
+      </>
   );
 }
 
