@@ -64,7 +64,7 @@ export default function RegisterPage() {
     dispatch(clearAuthError());
     const result = await dispatch(registerUser(form));
     if (registerUser.fulfilled.match(result)) {
-      navigate('/', { replace: true });
+      navigate('/feed', { replace: true });
     }
   };
 

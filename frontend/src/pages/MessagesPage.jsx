@@ -196,7 +196,7 @@ export default function MessagesPage() {
             <h1 className="font-display text-xl">Messages</h1>
           </header>
           <div className="border-b border-ink-line px-3 py-3">
-            <div className="flex gap-3 overflow-x-auto overflow-visible pb-1">
+            <div className="flex gap-3 overflow-x-auto px-1 pb-1 pt-8">
               <button type="button" onClick={() => setNoteEditorOpen((open) => !open)} className="relative w-20 shrink-0 overflow-visible text-center">
                 <div className="relative mx-auto mb-1 h-[56px] w-[56px] overflow-visible">
                   {ownNote && (

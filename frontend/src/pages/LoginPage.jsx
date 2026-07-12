@@ -22,7 +22,7 @@ export default function LoginPage() {
     dispatch(clearAuthError());
     const result = await dispatch(loginUser({ identifier, password, rememberMe }));
     if (loginUser.fulfilled.match(result)) {
-      navigate(location.state?.from?.pathname || '/', { replace: true });
+      navigate(location.state?.from?.pathname || '/feed', { replace: true });
     }
   };
 

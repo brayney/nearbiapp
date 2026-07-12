@@ -23,6 +23,7 @@ import NearbyPage from './pages/NearbyPage';
 import PostDetailPage from './pages/PostDetailPage';
 import MessagesPage from './pages/MessagesPage';
 import NotificationsPage from './pages/NotificationsPage';
+import LandingPage from './pages/LandingPage';
 
 export default function App() {
   const dispatch = useDispatch();
@@ -58,25 +59,19 @@ export default function App() {
             </ProtectedRoute>
           }
         >
-          <Route path="/" element={<FeedPage />} />
-          <Route path="/explore" element={<ExplorePage />} />
-          <Route path="/search" element={<SearchPage />} />
-          <Route path="/nearby" element={<NearbyPage />} />
-          <Route path="/saved" element={<SavedPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/profile/:username" element={<ProfilePage />} />
-          <Route path="/post/:postId" element={<PostDetailPage />} />
+            <Route path="/feed" element={<FeedPage />} />
+            <Route path="/explore" element={<ExplorePage />} />
+            <Route path="/search" element={<SearchPage />} />
+            <Route path="/nearby" element={<NearbyPage />} />
+            <Route path="/saved" element={<SavedPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/profile/:username" element={<ProfilePage />} />
+            <Route path="/post/:postId" element={<PostDetailPage />} />
 
-          <Route path="/messages" element={<MessagesPage />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
-        </Route>
-
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-
-      <ToastStack />
-      <CreatePostModal />
-    </>
+            <Route path="/messages" element={<MessagesPage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
+          </Route>
+          <Route path="/" element={<LandingPage />} />
   );
 }
 

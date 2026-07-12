@@ -222,15 +222,15 @@ export default function ProfilePage() {
         {followsYou && <p className="text-sm text-coral mb-2">Follows you</p>}
         {profile.bio && <p className="text-[15px] mb-3 max-w-md">{profile.bio}</p>}
 
-        <div className="flex gap-5 text-sm mb-6 font-mono">
-          <span>
-            <strong className="font-sans">{profile.postsCount}</strong> <span className="text-slate-faint">posts</span>
+        <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm mb-6 font-mono text-paper">
+          <span className="whitespace-nowrap">
+            <strong className="font-sans tabular-nums">{profile.postsCount ?? 0}</strong> <span className="text-slate-faint">posts</span>
           </span>
-          <button type="button" onClick={() => openConnections('followers')} className="text-left hover:text-paper transition-colors" aria-label={`View ${profile.username}'s followers`}>
-            <strong className="font-sans">{profile.followersCount}</strong> <span className="text-slate-faint">followers</span>
+          <button type="button" onClick={() => openConnections('followers')} className="whitespace-nowrap text-left text-paper hover:text-paper transition-colors" aria-label={`View ${profile.username}'s followers`}>
+            <strong className="font-sans tabular-nums">{profile.followersCount ?? 0}</strong> <span className="text-slate-faint">followers</span>
           </button>
-          <button type="button" onClick={() => openConnections('following')} className="text-left hover:text-paper transition-colors" aria-label={`View who ${profile.username} follows`}>
-            <strong className="font-sans">{profile.followingCount}</strong> <span className="text-slate-faint">following</span>
+          <button type="button" onClick={() => openConnections('following')} className="whitespace-nowrap text-left text-paper hover:text-paper transition-colors" aria-label={`View who ${profile.username} follows`}>
+            <strong className="font-sans tabular-nums">{profile.followingCount ?? 0}</strong> <span className="text-slate-faint">following</span>
           </button>
         </div>
 

@@ -18,7 +18,7 @@ import { openCreatePost } from '../features/ui/uiSlice';
 import { messagesApi, notificationsApi } from '../api/resources';
 
 const NAV_ITEMS = [
-  { to: '/', icon: Home, label: 'Home', end: true },
+  { to: '/feed', icon: Home, label: 'Home', end: true },
   { to: '/explore', icon: Compass, label: 'Explore' },
   { to: '/search', icon: Search, label: 'Search' },
   { to: '/nearby', icon: Radar, label: 'Nearby' },
@@ -90,7 +90,7 @@ export default function AppShell() {
     return item;
   });
 
-  const showMobileCreate = ['/','/explore'].includes(location.pathname);
+  const showMobileCreate = ['/feed', '/explore'].includes(location.pathname);
   const mobileNavItems = [navItems[0], navItems[1], navItems[3], navItems[5], navItems[4]];
 
   return (
@@ -152,7 +152,8 @@ export default function AppShell() {
       {/* Mobile bottom nav */}
       <button
         onClick={() => navigate(`/profile/${user?.username}`)}
-        className="fixed top-[calc(0.75rem+env(safe-area-inset-top))] right-4 z-50 hidden rounded-xl border border-ink-line bg-ink-soft p-1.5 shadow-lg shadow-black/20 md:hidden"
+        className="fixed top-[calc(0.75rem+env(safe-area-inset-top))] right-4 z-50 block rounded-xl border border-ink-line bg-ink-soft p-1.5 shadow-lg shadow-black/20 md:hidden"
+        aria-label="Open profile"
       >
         <Avatar src={user?.profilePicture?.url} alt={user?.username} size="sm" />
       </button>
