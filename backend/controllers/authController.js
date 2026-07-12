@@ -177,8 +177,11 @@ exports.refresh = catchAsync(async (req, res, next) => {
 
 // ---------------- FORGOT PASSWORD ----------------
 exports.forgotPassword = catchAsync(async (req, res, next) => {
-  const { birthday, favoritePet } = req.body;
-  const user = await User.findOne({ birthday: new Date(birthday) }).select('+recoveryPetHash');
+  const { identifier, birthday, favoritePet } = req.body;
+  const normalizedIdentifier = identifier.toLowerCase();
+  const user = await User.findOne({
+    $or: [{ email: normalizedIdentifier }, { username: normalizedIdentifier }],
+  }).select('+recoveryPetHash');
 
   const recoveryMatches = user
     && user.recoveryPetHash

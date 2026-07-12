@@ -150,29 +150,29 @@ export default function AppShell() {
       )}
 
       {/* Mobile bottom nav */}
+      <button
+        onClick={() => navigate(`/profile/${user?.username}`)}
+        className="fixed top-[calc(0.75rem+env(safe-area-inset-top))] right-4 z-50 hidden rounded-xl border border-ink-line bg-ink-soft p-1.5 shadow-lg shadow-black/20 md:hidden"
+      >
+        <Avatar src={user?.profilePicture?.url} alt={user?.username} size="sm" />
+      </button>
+
       <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-ink-line bg-ink-soft px-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2 md:hidden">
-        {[mobileNavItems[0], mobileNavItems[1], mobileNavItems[2], mobileNavItems[3], 'profile'].map(
-          (item) =>
-            item === 'profile' ? (
-              <button key="profile" onClick={() => navigate(`/profile/${user?.username}`)} className="flex h-11 w-11 items-center justify-center rounded-xl p-1">
-                <Avatar src={user?.profilePicture?.url} alt={user?.username} size="sm" />
-              </button>
-            ) : (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                className={({ isActive }) => `relative flex h-11 w-11 items-center justify-center rounded-xl ${isActive ? 'text-coral' : 'text-slate-faint'}`}
-              >
-                <item.icon size={22} strokeWidth={1.75} />
-                {item.badge > 0 && (
-                  <span className="absolute right-0 top-0 rounded-full bg-coral px-1.5 text-[11px] font-semibold text-ink">
-                    {item.badge > 9 ? '9+' : item.badge}
-                  </span>
-                )}
-              </NavLink>
-            )
-        )}
+        {mobileNavItems.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.end}
+            className={({ isActive }) => `relative flex h-11 w-11 items-center justify-center rounded-xl ${isActive ? 'text-coral' : 'text-slate-faint'}`}
+          >
+            <item.icon size={22} strokeWidth={1.75} />
+            {item.badge > 0 && (
+              <span className="absolute right-0 top-0 rounded-full bg-coral px-1.5 text-[11px] font-semibold text-ink">
+                {item.badge > 9 ? '9+' : item.badge}
+              </span>
+            )}
+          </NavLink>
+        ))}
       </nav>
     </div>
   );
