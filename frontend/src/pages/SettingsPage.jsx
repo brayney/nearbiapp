@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import Avatar from '../components/Avatar';
 import FormInput from '../components/FormInput';
@@ -7,12 +8,27 @@ import { authApi } from '../api/auth';
 import { pushToast } from '../features/ui/uiSlice';
 import { fetchMe } from '../features/auth/authSlice';
 
-const TABS = ['Profile', 'Privacy', 'Password'];
+const TABS = ['Profile', 'Privacy', 'Password', 'System'];
+const SYSTEM_INFO_LABELS = [
+  { label: 'App URL', key: 'origin' },
+  { label: 'Environment', key: 'environment' },
+  { label: 'Browser', key: 'browser' },
+  { label: 'Platform', key: 'platform' },
+  { label: 'Timezone', key: 'timezone' },
+];
 
 export default function SettingsPage() {
-  const [tab, setTab] = useState('Profile');
+  const location = useLocation();
+  const queryTab = useMemo(() => new URLSearchParams(location.search).get('tab'), [location.search]);
+  const [tab, setTab] = useState(queryTab && TABS.includes(queryTab) ? queryTab : 'Profile');
   const user = useSelector((s) => s.auth.user);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (queryTab && TABS.includes(queryTab)) {
+      setTab(queryTab);
+    }
+  }, [queryTab]);
 
   return (
     <div className="max-w-xl mx-auto px-4 py-6">
@@ -36,6 +52,7 @@ export default function SettingsPage() {
       {tab === 'Profile' && <ProfileTab user={user} dispatch={dispatch} />}
       {tab === 'Privacy' && <PrivacyTab dispatch={dispatch} />}
       {tab === 'Password' && <PasswordTab dispatch={dispatch} />}
+      {tab === 'System' && <SystemTab />}
     </div>
   );
 }
@@ -96,10 +113,13 @@ function ProfileTab({ user, dispatch }) {
     <div>
       <div className="flex items-center gap-4 mb-6">
         <Avatar src={user?.profilePicture?.url} alt={user?.username} size="lg" />
-        <label className="text-sm font-medium text-teal-bright hover:underline cursor-pointer">
-          {avatarUploading ? 'Uploading...' : 'Change photo'}
-          <input type="file" accept="image/*" hidden onChange={handleAvatarChange} />
-        </label>
+        <div>
+          <p className="text-sm text-slate-faint">Signed in as</p>
+          <p className="font-medium">{user?.email || 'Not available'}</p>
+          <p className={`text-sm ${user?.isEmailVerified ? 'text-teal-bright' : 'text-coral'}`}>
+            {user?.isEmailVerified ? 'Email verified' : 'Email not verified'}
+          </p>
+        </div>
       </div>
 
       {!user?.isEmailVerified && (
@@ -264,5 +284,39 @@ function PasswordTab({ dispatch }) {
         {saving ? 'Saving...' : 'Change password'}
       </button>
     </form>
+  );
+}
+
+function SystemTab() {
+  const [systemInfo, setSystemInfo] = useState({
+    origin: '',
+    environment: 'browser',
+    browser: '',
+    platform: '',
+    timezone: '',
+  });
+
+  useEffect(() => {
+    setSystemInfo({
+      origin: window.location.origin,
+      environment: process.env.NODE_ENV || 'production',
+      browser: navigator.userAgent,
+      platform: navigator.platform,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Unknown',
+    });
+  }, []);
+
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-slate-faint">System info provides details on your environment and browser while using this app.</p>
+      <div className="grid gap-4">
+        {SYSTEM_INFO_LABELS.map(({ label, key }) => (
+          <div key={key} className="rounded-2xl border border-ink-line bg-ink-soft p-4">
+            <p className="text-sm text-slate-faint">{label}</p>
+            <p className="mt-1 text-sm text-paper break-all">{systemInfo[key]}</p>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

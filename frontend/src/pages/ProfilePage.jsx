@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { Settings, Grid3x3, LogOut as LogOutIcon } from 'lucide-react';
+import { Grid3x3, MoreVertical } from 'lucide-react';
 import Avatar from '../components/Avatar';
 import { usersApi, postsApi } from '../api/resources';
 import { pushToast } from '../features/ui/uiSlice';
@@ -10,7 +10,6 @@ import { logoutUser } from '../features/auth/authSlice';
 export default function ProfilePage() {
   const { username } = useParams();
   const dispatch = useDispatch();
-  const currentUser = useSelector((s) => s.auth.user);
 
   const [profile, setProfile] = useState(null);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -19,6 +18,8 @@ export default function ProfilePage() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [followBusy, setFollowBusy] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const menuRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -63,9 +64,20 @@ export default function ProfilePage() {
   };
 
   const handleLogout = async () => {
+    setShowProfileMenu(false);
     await dispatch(logoutUser());
     navigate('/login');
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowProfileMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   if (loading) {
     return <div className="max-w-2xl mx-auto px-4 py-10 animate-pulse text-slate-mute">Loading profile...</div>;
@@ -86,6 +98,45 @@ export default function ProfilePage() {
         {profile.coverPhoto?.url && (
           <img src={profile.coverPhoto.url} alt="" className="w-full h-full object-cover" />
         )}
+        {isOwner && (
+          <div className="absolute right-4 top-4">
+            <div className="relative" ref={menuRef}>
+              <button
+                type="button"
+                onClick={() => setShowProfileMenu((open) => !open)}
+                className="rounded-full bg-ink/80 p-2 text-slate-faint shadow-xl transition hover:bg-ink"
+                aria-label="Open profile actions"
+              >
+                <MoreVertical size={20} />
+              </button>
+              {showProfileMenu && (
+                <div className="absolute right-0 mt-2 w-48 overflow-hidden rounded-2xl border border-ink-line bg-ink py-2 shadow-xl">
+                  <Link
+                    to="/settings"
+                    onClick={() => setShowProfileMenu(false)}
+                    className="block px-4 py-2 text-sm text-paper hover:bg-ink-soft"
+                  >
+                    Settings
+                  </Link>
+                  <Link
+                    to="/settings?tab=Privacy"
+                    onClick={() => setShowProfileMenu(false)}
+                    className="block px-4 py-2 text-sm text-paper hover:bg-ink-soft"
+                  >
+                    Privacy
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 text-sm text-coral hover:bg-ink-soft"
+                  >
+                    Log out
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="px-4 md:px-0">
@@ -97,22 +148,7 @@ export default function ProfilePage() {
             online={profile.isOnline}
             className="border-4 border-ink rounded-full"
           />
-          {isOwner ? (
-            <div className="flex flex-col gap-2">
-              <Link
-                to="/settings"
-                className="flex items-center gap-1.5 text-sm font-medium border border-ink-line rounded-xl px-3 py-2 hover:bg-ink-soft"
-              >
-                <Settings size={16} /> Edit profile
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-1.5 text-sm font-medium border border-ink-line rounded-xl px-3 py-2 text-coral hover:bg-ink-soft"
-              >
-                <LogOutIcon size={16} /> Log out
-              </button>
-            </div>
-          ) : (
+          {isOwner ? null : (
             <div className="flex items-center gap-2">
               <button
                 onClick={handleFollowToggle}
