@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: social-app-backend
+    env: node
+    plan: free
+    root: .
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeploy: true
+    healthCheckPath: /api/health

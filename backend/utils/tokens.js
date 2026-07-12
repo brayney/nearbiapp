@@ -36,13 +36,13 @@ function setAuthCookies(res, accessToken, refreshToken) {
   res.cookie('accessToken', accessToken, {
     httpOnly: true,
     secure: isProd,
-    sameSite: 'lax',
+    sameSite: 'none',
     maxAge: msFromExpiryString(process.env.JWT_ACCESS_EXPIRES),
   });
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
     secure: isProd,
-    sameSite: 'lax',
+    sameSite: 'none',
     path: '/api/auth/refresh',
     maxAge: msFromExpiryString(process.env.JWT_REFRESH_EXPIRES),
   });
