@@ -140,13 +140,6 @@ export default function AppShell() {
             <Avatar src={user?.profilePicture?.url} alt={user?.username} size="sm" />
             <span className="hidden md:block truncate text-sm font-medium">{user?.username}</span>
           </button>
-          <button
-            onClick={() => navigate('/settings')}
-            className="flex items-center gap-3 rounded-xl bg-ink-soft px-3 py-3 text-sm font-medium text-paper transition hover:bg-ink"
-          >
-            <Settings size={20} />
-            <span className="hidden md:block">Settings</span>
-          </button>
         </div>
       </aside>
 

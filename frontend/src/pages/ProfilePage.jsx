@@ -28,7 +28,11 @@ export default function ProfilePage() {
   const [editData, setEditData] = useState({ displayName: '', username: '', bio: '' });
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [connections, setConnections] = useState({ type: null, users: [], loading: false });
-  const isOwner = Boolean(profile && currentUser && profile.username === currentUser.username);
+  const isOwner = Boolean(
+    profile &&
+    currentUser &&
+    (profile.username === currentUser.username || profile.id === currentUser.id || profile._id === currentUser._id)
+  );
   const menuRef = useRef(null);
 
   useEffect(() => {
