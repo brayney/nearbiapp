@@ -34,6 +34,11 @@ function sameBirthday(left, right) {
   return new Date(left).toISOString().slice(0, 10) === new Date(right).toISOString().slice(0, 10);
 }
 
+// Email is private, so only include it in responses for the authenticated account.
+function toAuthenticatedUser(user) {
+  return { ...user.toPublicProfile(), email: user.email };
+}
+
 async function issueSession(user, req, res, statusCode) {
   const accessToken = generateAccessToken(user._id, user.role);
   const refreshToken = generateRefreshToken(user._id);
@@ -57,7 +62,7 @@ async function issueSession(user, req, res, statusCode) {
     success: true,
     accessToken,
     refreshToken,
-    user: user.toPublicProfile(),
+    user: toAuthenticatedUser(user),
   });
 }
 
@@ -283,5 +288,5 @@ exports.resendVerification = catchAsync(async (req, res, next) => {
 
 // ---------------- ME ----------------
 exports.getMe = catchAsync(async (req, res) => {
-  res.status(200).json({ success: true, user: req.user.toPublicProfile() });
+  res.status(200).json({ success: true, user: toAuthenticatedUser(req.user) });
 });

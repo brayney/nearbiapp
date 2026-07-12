@@ -112,7 +112,20 @@ function ProfileTab({ user, dispatch }) {
   return (
     <div>
       <div className="flex items-center gap-4 mb-6">
-        <Avatar src={user?.profilePicture?.url} alt={user?.username} size="lg" />
+        <label className={`group relative cursor-pointer ${avatarUploading ? 'cursor-wait opacity-70' : ''}`}>
+          <Avatar src={user?.profilePicture?.url} alt={user?.username} size="lg" />
+          <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/60 px-1 text-center text-[11px] font-semibold text-paper opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+            {avatarUploading ? 'Uploading...' : 'Change photo'}
+          </span>
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp"
+            onChange={handleAvatarChange}
+            disabled={avatarUploading}
+            className="sr-only"
+            aria-label="Change profile photo"
+          />
+        </label>
         <div>
           <p className="text-sm text-slate-faint">Signed in as</p>
           <p className="font-medium">{user?.email || 'Not available'}</p>
@@ -123,8 +136,8 @@ function ProfileTab({ user, dispatch }) {
       </div>
 
       {!user?.isEmailVerified && (
-        <div className="mb-6 rounded-xl border border-coral/50 bg-ink-soft p-4">
-          <p className="text-sm font-medium">Your email is not verified yet.</p>
+        <div className="mb-6 rounded-xl border border-ink-line bg-ink-soft p-4">
+          <p className="text-sm font-medium">Your email is not verified yet (optional).</p>
           <p className="mt-1 text-sm text-slate-faint">Email verification is optional. Password recovery uses the details you set when registering.</p>
           <button onClick={resendVerification} disabled={resendingVerification} className="mt-3 text-sm font-semibold text-coral disabled:opacity-50">
             {resendingVerification ? 'Sending…' : 'Resend verification email'}
