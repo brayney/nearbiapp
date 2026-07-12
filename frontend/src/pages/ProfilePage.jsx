@@ -370,13 +370,16 @@ export default function ProfilePage() {
             </div>
           )}
         </div>
+      </div>
 
       {connections.type && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-labelledby="connections-title" onMouseDown={closeConnections}>
           <div className="max-h-[80vh] w-full max-w-md overflow-hidden rounded-t-2xl border border-ink-line bg-ink shadow-2xl sm:rounded-2xl" onMouseDown={(event) => event.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-ink-line px-4 py-3">
               <h2 id="connections-title" className="font-display text-lg capitalize">{connections.type}</h2>
-              <button type="button" onClick={closeConnections} className="rounded-full p-2 text-slate-faint hover:bg-ink-soft hover:text-paper" aria-label="Close"><X size={18} /></button>
+              <button type="button" onClick={closeConnections} className="rounded-full p-2 text-slate-faint hover:bg-ink-soft hover:text-paper" aria-label="Close">
+                <X size={18} />
+              </button>
             </div>
             <div className="max-h-[calc(80vh-57px)] overflow-y-auto p-2">
               {connections.loading ? (
