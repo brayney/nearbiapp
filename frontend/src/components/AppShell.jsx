@@ -103,7 +103,7 @@ export default function AppShell() {
 
   const showMobileCreate = ['/feed', '/explore'].includes(location.pathname);
   const showBurger = /^\/feed(?:\/|$)/.test(location.pathname);
-  const mobileNavItems = [navItems[0], navItems[1], navItems[3], navItems[5], navItems[4]];
+  const mobileNavItems = [navItems[0], navItems[1], navItems[3], navItems[5], navItems[4], navItems[7]];
 
   return (
     <div className="flex min-h-[100dvh] bg-ink text-paper md:h-screen md:overflow-hidden">
@@ -132,13 +132,20 @@ export default function AppShell() {
           </button>
         )}
 
-        <div className="mt-6 pt-6 border-t border-ink-line flex items-center gap-3 px-1">
+        <div className="mt-6 pt-6 border-t border-ink-line flex flex-col gap-3 px-1">
           <button
             onClick={() => navigate(`/profile/${user?.username}`)}
-            className="flex items-center gap-3 flex-1 min-w-0"
+            className="flex items-center gap-3 flex-1 min-w-0 rounded-xl bg-ink-soft px-3 py-3 text-sm font-medium text-paper transition hover:bg-ink"
           >
             <Avatar src={user?.profilePicture?.url} alt={user?.username} size="sm" />
             <span className="hidden lg:block truncate text-sm font-medium">{user?.username}</span>
+          </button>
+          <button
+            onClick={() => navigate('/settings')}
+            className="flex items-center gap-3 rounded-xl bg-ink-soft px-3 py-3 text-sm font-medium text-paper transition hover:bg-ink"
+          >
+            <Settings size={20} />
+            <span className="hidden lg:block">Settings</span>
           </button>
         </div>
       </aside>
@@ -199,7 +206,7 @@ export default function AppShell() {
               <span className="truncate">Profile</span>
             </button>
             <nav className="space-y-2">
-              {[navItems[0], navItems[1], navItems[3], navItems[4]].map((item) => (
+              {[navItems[0], navItems[1], navItems[3], navItems[4], navItems[7]].map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
@@ -211,6 +218,13 @@ export default function AppShell() {
                   {item.badge > 0 && <span className="ml-auto rounded-full bg-coral px-2 py-0.5 text-xs font-semibold text-ink">{item.badge}</span>}
                 </NavLink>
               ))}
+              <NavLink
+                to="/settings"
+                className={({ isActive }) => `flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors ${isActive ? 'bg-ink-soft text-paper' : 'text-slate-faint hover:bg-ink-soft hover:text-paper'}`}
+              >
+                <Settings size={20} strokeWidth={1.75} />
+                Settings
+              </NavLink>
             </nav>
             <button type="button" onClick={handleLogout} className="mt-auto flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-coral transition-colors hover:bg-ink-soft">
               <LogOut size={20} />
