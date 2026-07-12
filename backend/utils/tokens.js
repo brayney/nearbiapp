@@ -33,24 +33,26 @@ function msFromExpiryString(expiryStr) {
 
 function setAuthCookies(res, accessToken, refreshToken) {
   const isProd = process.env.NODE_ENV === 'production';
-  res.cookie('accessToken', accessToken, {
+  const cookieOptions = {
     httpOnly: true,
     secure: isProd,
-    sameSite: 'none',
+    sameSite: isProd ? 'none' : 'lax',
+    path: '/api',
+  };
+
+  res.cookie('accessToken', accessToken, {
+    ...cookieOptions,
     maxAge: msFromExpiryString(process.env.JWT_ACCESS_EXPIRES),
   });
   res.cookie('refreshToken', refreshToken, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: 'none',
-    path: '/api/auth/refresh',
+    ...cookieOptions,
     maxAge: msFromExpiryString(process.env.JWT_REFRESH_EXPIRES),
   });
 }
 
 function clearAuthCookies(res) {
-  res.clearCookie('accessToken');
-  res.clearCookie('refreshToken', { path: '/api/auth/refresh' });
+  res.clearCookie('accessToken', { path: '/api' });
+  res.clearCookie('refreshToken', { path: '/api' });
 }
 
 module.exports = {

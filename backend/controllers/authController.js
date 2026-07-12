@@ -256,9 +256,17 @@ exports.resendVerification = catchAsync(async (req, res, next) => {
   if (user.isEmailVerified) {
     return res.status(200).json({ success: true, message: 'Email already verified.' });
   }
+
   const verifyToken = user.createEmailVerificationToken();
   await user.save({ validateBeforeSave: false });
-  await sendVerificationEmail(user.email, verifyToken);
+
+  try {
+    await sendVerificationEmail(user.email, verifyToken);
+  } catch (err) {
+    console.error('Failed to resend verification email:', err);
+    return next(new ApiError(500, 'Could not send verification email. Please try again later.'));
+  }
+
   res.status(200).json({ success: true, message: 'Verification email sent.' });
 });
 

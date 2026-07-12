@@ -6,6 +6,7 @@ const baseURL = configuredUrl.endsWith('/api') ? configuredUrl : `${configuredUr
 const api = axios.create({
   baseURL,
   withCredentials: true, // send httpOnly cookies (accessToken/refreshToken)
+  timeout: 20000,
 });
 
 // Attach bearer token if we have one in memory (cookie is the primary
@@ -35,10 +36,11 @@ api.interceptors.response.use(
     const original = error.config;
     const status = error.response?.status;
 
-    // Don't try to refresh for the auth endpoints themselves.
-    const isAuthRoute = original?.url?.includes('/auth/');
+    // Avoid refresh loops for login / register / logout / refresh routes.
+    const disallowedRefreshRoutes = ['/auth/login', '/auth/register', '/auth/logout', '/auth/refresh'];
+    const isRefreshBlocked = disallowedRefreshRoutes.some((route) => original?.url?.includes(route));
 
-    if (status === 401 && !original._retry && !isAuthRoute) {
+    if (status === 401 && !original._retry && !isRefreshBlocked) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           queue.push({ resolve, reject });

@@ -108,11 +108,21 @@ export default function AppShell() {
 
       {/* Mobile bottom nav */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-ink-line bg-ink-soft px-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2 md:hidden">
-        {[NAV_ITEMS[0], NAV_ITEMS[1], NAV_ITEMS[3], { to: '/messages', icon: MessageCircle }, `profile`].map(
+        {[NAV_ITEMS[0], NAV_ITEMS[1], NAV_ITEMS[3], { to: '/messages', icon: MessageCircle }, `profile`, { action: handleLogout, icon: LogOut }].map(
           (item, i) =>
             item === 'profile' ? (
               <button key="profile" onClick={() => navigate(`/profile/${user?.username}`)} className="flex h-11 w-11 items-center justify-center rounded-xl p-1">
                 <Avatar src={user?.profilePicture?.url} alt={user?.username} size="sm" />
+              </button>
+            ) : item.action ? (
+              <button
+                key="logout"
+                type="button"
+                onClick={item.action}
+                className="flex h-11 w-11 items-center justify-center rounded-xl text-slate-faint hover:text-coral"
+                aria-label="Log out"
+              >
+                <item.icon size={22} strokeWidth={1.75} />
               </button>
             ) : (
               <NavLink

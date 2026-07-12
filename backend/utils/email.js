@@ -9,6 +9,13 @@ function buildTransport() {
     port: Number(process.env.SMTP_PORT) || 587,
     secure: Number(process.env.SMTP_PORT) === 465,
     auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
+    socketTimeout: 15000,
+    authTimeout: 15000,
+    tls: {
+      rejectUnauthorized: false,
+    },
   });
 }
 
