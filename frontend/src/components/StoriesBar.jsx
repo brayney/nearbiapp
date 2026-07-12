@@ -65,12 +65,12 @@ export default function StoriesBar() {
     <>
       <div className="border-b border-ink-line px-4 py-4 md:px-0">
         <div className="flex gap-4 overflow-x-auto pb-1">
-          <button type="button" onClick={() => setCreating(true)} className="w-16 shrink-0 text-center" aria-label="Add story">
+          <button type="button" onClick={() => setCreating(true)} className="w-16 shrink-0 rounded-full bg-transparent p-0 text-center text-slate-faint focus:outline-none focus:ring-0" aria-label="Add story">
             <div className="relative mx-auto w-fit"><Avatar src={currentUser?.profilePicture?.url} alt={currentUser?.username} size="lg" /><span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-ink bg-coral text-ink"><Plus size={15} /></span></div>
             <span className="mt-1 block truncate text-xs">Your story</span>
           </button>
           {groups.map((group) => (
-            <button key={group.author?._id || group.author?.id} type="button" onClick={() => openStory(group.stories[0])} className="w-16 shrink-0 text-center">
+            <button key={group.author?._id || group.author?.id} type="button" onClick={() => openStory(group.stories[0])} className="w-16 shrink-0 rounded-full bg-transparent p-0 text-center text-slate-faint focus:outline-none focus:ring-0">
               <div className="mx-auto w-fit rounded-full bg-gradient-to-tr from-coral via-teal to-coral p-0.5"><Avatar src={group.author?.profilePicture?.url} alt={group.author?.username} size="lg" className="border-2 border-ink" /></div>
               <span className="mt-1 block truncate text-xs">{group.author?.username}</span>
             </button>

@@ -198,58 +198,19 @@ export default function ProfilePage() {
             )}
           </div>
 
-          <div className="mt-6 grid grid-cols-3 gap-3 text-center">
-            <div className="rounded-2xl border border-ink-line bg-ink-soft px-4 py-4">
-              <p className="text-lg font-semibold text-paper">{profile.postsCount ?? 0}</p>
-              <p className="text-xs uppercase tracking-[0.28em] text-slate-faint">Posts</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => openConnections('followers')}
-              className="rounded-2xl border border-ink-line bg-ink-soft px-4 py-4 text-left transition hover:bg-ink"
-            >
-              <p className="text-lg font-semibold text-paper">{profile.followersCount ?? 0}</p>
-              <p className="text-xs uppercase tracking-[0.28em] text-slate-faint">Followers</p>
+          <div className="mt-6 flex items-center justify-between gap-8 text-sm font-semibold text-paper">
+            <button type="button" onClick={() => openConnections('posts')} className="text-left text-lg font-semibold text-paper">
+              {profile.postsCount ?? 0}
+              <span className="block text-xs font-normal text-slate-faint">Posts</span>
             </button>
-            <button
-              type="button"
-              onClick={() => openConnections('following')}
-              className="rounded-2xl border border-ink-line bg-ink-soft px-4 py-4 text-left transition hover:bg-ink"
-            >
-              <p className="text-lg font-semibold text-paper">{profile.followingCount ?? 0}</p>
-              <p className="text-xs uppercase tracking-[0.28em] text-slate-faint">Following</p>
+            <button type="button" onClick={() => openConnections('followers')} className="text-left text-lg font-semibold text-paper">
+              {profile.followersCount ?? 0}
+              <span className="block text-xs font-normal text-slate-faint">Followers</span>
             </button>
-          </div>
-
-          <div className="mt-6 rounded-3xl border border-ink-line bg-[#101010] p-4">
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <div>
-                <p className="text-sm uppercase tracking-[0.28em] text-slate-faint">Professional dashboard</p>
-                <p className="mt-2 text-sm font-semibold">246 views in the last 30 days.</p>
-              </div>
-              <button className="rounded-2xl border border-ink-line px-4 py-2 text-sm font-semibold text-paper hover:bg-ink-soft">View</button>
-            </div>
-          </div>
-
-          <div className="mt-6 overflow-x-auto pb-3">
-            <div className="flex gap-4">
-              <button className="min-w-[96px] rounded-3xl border border-ink-line bg-ink-soft px-4 py-3 text-sm font-semibold text-paper transition hover:bg-ink">
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-ink-line">+</span>
-                <span className="mt-2 block text-xs text-slate-faint">New</span>
-              </button>
-
-              <div className="min-w-[96px] rounded-3xl border border-ink-line bg-ink-soft px-4 py-3 text-center">
-                <div className="mx-auto mb-2 h-10 w-10 overflow-hidden rounded-full border border-ink-line">
-                  <img src={profile.profilePicture?.url} alt={profile.username} className="h-full w-full object-cover" />
-                </div>
-                <span className="text-xs text-slate-faint">{profile.displayName || profile.username}</span>
-              </div>
-
-              <div className="min-w-[96px] rounded-3xl border border-ink-line bg-ink-soft px-4 py-3 text-center">
-                <div className="mx-auto mb-2 h-10 w-10 rounded-full border border-ink-line bg-slate-900" />
-                <span className="text-xs text-slate-faint">shesh</span>
-              </div>
-            </div>
+            <button type="button" onClick={() => openConnections('following')} className="text-left text-lg font-semibold text-paper">
+              {profile.followingCount ?? 0}
+              <span className="block text-xs font-normal text-slate-faint">Following</span>
+            </button>
           </div>
 
           <div className="mt-6 border-t border-ink-line pt-4">
