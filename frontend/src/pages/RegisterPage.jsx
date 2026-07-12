@@ -150,12 +150,12 @@ export default function RegisterPage() {
           <p className="text-coral text-sm mb-4 text-center">{stepError || error}</p>
         )}
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
           {step > 0 && (
             <button
               type="button"
               onClick={prevStep}
-              className="inline-flex rounded-xl border border-ink-line bg-ink-soft px-5 py-2.5 text-sm font-semibold text-paper transition duration-200 hover:bg-ink/80 sm:max-w-[160px]"
+              className="inline-flex rounded-xl border border-ink-line bg-ink-soft px-5 py-2.5 text-sm font-semibold text-paper transition duration-200 hover:bg-ink/80 sm:mr-auto sm:max-w-[160px]"
             >
               Back
             </button>
@@ -164,10 +164,10 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={status === 'loading'}
-            className="inline-flex w-full justify-center rounded-xl bg-coral py-2.5 px-6 text-sm font-semibold text-ink transition duration-200 hover:bg-coral-dim disabled:opacity-50 sm:w-auto sm:max-w-[220px]"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-teal-bright transition duration-200 hover:text-teal-bright/80 disabled:opacity-50"
           >
             {step < STEP_TITLES.length - 1
-              ? 'Proceed'
+              ? 'Proceed →'
               : status === 'loading'
               ? 'Creating account...'
               : 'Create account'}
