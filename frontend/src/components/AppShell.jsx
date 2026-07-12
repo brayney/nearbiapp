@@ -8,8 +8,11 @@ import {
   MessageCircle,
   Bell,
   Bookmark,
+  LogOut,
+  Menu,
   PlusSquare,
   Radar,
+  X,
 } from 'lucide-react';
 import Avatar from './Avatar';
 import SiteFooter from './SiteFooter';
@@ -56,8 +59,10 @@ export default function AppShell() {
   const user = useSelector((s) => s.auth.user);
   const [messagesCount, setMessagesCount] = useState(0);
   const [notificationsCount, setNotificationsCount] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
+    setMobileMenuOpen(false);
     await dispatch(logoutUser());
     navigate('/');
   };
@@ -82,6 +87,10 @@ export default function AppShell() {
 
   useEffect(() => {
     loadBadges();
+  }, [location.pathname]);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
   }, [location.pathname]);
 
   const navItems = NAV_ITEMS.map((item) => {
@@ -149,14 +158,51 @@ export default function AppShell() {
         </button>
       )}
 
-      {/* Mobile bottom nav */}
+      {/* Mobile menu */}
       <button
-        onClick={() => navigate(`/profile/${user?.username}`)}
-        className="fixed top-[calc(0.75rem+env(safe-area-inset-top))] right-4 z-50 block rounded-xl border border-ink-line bg-ink-soft p-1.5 shadow-lg shadow-black/20 md:hidden"
-        aria-label="Open profile"
+        type="button"
+        onClick={() => setMobileMenuOpen(true)}
+        className="fixed top-[calc(0.75rem+env(safe-area-inset-top))] right-4 z-50 flex h-11 w-11 items-center justify-center rounded-xl border border-ink-line bg-ink-soft text-paper shadow-lg shadow-black/20 md:hidden"
+        aria-label="Open menu"
+        aria-expanded={mobileMenuOpen}
       >
-        <Avatar src={user?.profilePicture?.url} alt={user?.username} size="sm" />
+        <Menu size={22} />
       </button>
+
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-[60] md:hidden" role="dialog" aria-modal="true" aria-label="Navigation menu">
+          <button type="button" className="absolute inset-0 bg-black/60" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu" />
+          <aside className="relative flex h-full w-[min(20rem,85vw)] flex-col border-r border-ink-line bg-ink p-5 shadow-2xl">
+            <div className="mb-8 flex items-center justify-between">
+              <div className="flex items-center gap-2 font-display text-xl">
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-coral font-semibold text-ink">n</span>
+                nearbi
+              </div>
+              <button type="button" onClick={() => setMobileMenuOpen(false)} className="rounded-xl p-2 text-slate-faint hover:bg-ink-soft hover:text-paper" aria-label="Close menu">
+                <X size={22} />
+              </button>
+            </div>
+            <nav className="space-y-2">
+              {[navItems[0], navItems[1], navItems[3], navItems[4]].map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.end}
+                  className={({ isActive }) => `flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors ${isActive ? 'bg-ink-soft text-paper' : 'text-slate-faint hover:bg-ink-soft hover:text-paper'}`}
+                >
+                  <item.icon size={20} strokeWidth={1.75} />
+                  {item.label}
+                  {item.badge > 0 && <span className="ml-auto rounded-full bg-coral px-2 py-0.5 text-xs font-semibold text-ink">{item.badge}</span>}
+                </NavLink>
+              ))}
+            </nav>
+            <button type="button" onClick={handleLogout} className="mt-auto flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-coral transition-colors hover:bg-ink-soft">
+              <LogOut size={20} />
+              Log out
+            </button>
+          </aside>
+        </div>
+      )}
 
       <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-ink-line bg-ink-soft px-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2 md:hidden">
         {mobileNavItems.map((item) => (

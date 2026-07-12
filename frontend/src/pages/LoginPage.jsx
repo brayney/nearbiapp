@@ -28,7 +28,7 @@ export default function LoginPage() {
 
   return (
     <AuthLayout title="Welcome back" subtitle="Log in to see what's happening close by">
-      <Link to="/" className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-slate-faint transition-colors hover:text-paper">
+      <Link to="/" className="mb-6 inline-flex items-center gap-2 rounded-xl border border-ink-line bg-ink-soft px-3 py-2 text-sm font-semibold text-paper transition-colors hover:border-teal-bright hover:bg-ink">
         <ArrowLeft size={16} />
         Back to home
       </Link>
