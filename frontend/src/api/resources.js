@@ -23,6 +23,7 @@ export const postsApi = {
   reportPost: (postId, reason, details) => api.post(`/posts/${postId}/report`, { reason, details }),
   getSaved: () => api.get('/posts/saved'),
   getUserPosts: (username) => api.get(`/posts/user/${username}`),
+  getUserReposts: (username) => api.get(`/posts/user/${username}/reposts`),
 };
 
 export const usersApi = {

@@ -14,6 +14,7 @@ router.get('/feed', postController.getFeed);
 router.get('/trending', postController.getTrending);
 router.get('/saved', postController.getSavedPosts);
 router.get('/user/:username', postController.getUserPosts);
+router.get('/user/:username/reposts', postController.getUserReposts);
 
 router.post('/', uploadLimiter, upload.array('media', 10), postController.createPost);
 

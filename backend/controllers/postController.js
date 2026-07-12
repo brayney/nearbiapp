@@ -262,9 +262,24 @@ exports.toggleSave = catchAsync(async (req, res, next) => {
 });
 
 exports.sharePost = catchAsync(async (req, res, next) => {
-  const post = await Post.findByIdAndUpdate(req.params.postId, { $inc: { shares: 1 } }, { new: true });
+  const post = await Post.findByIdAndUpdate(
+    req.params.postId,
+    { $inc: { shares: 1 }, $addToSet: { sharedBy: req.user._id } },
+    { new: true }
+  );
   if (!post) return next(new ApiError(404, 'Post not found.'));
   res.status(200).json({ success: true, shares: post.shares });
+});
+
+exports.getUserReposts = catchAsync(async (req, res, next) => {
+  const user = await User.findOne({ username: req.params.username.toLowerCase() });
+  if (!user) return next(new ApiError(404, 'User not found.'));
+
+  const posts = await Post.find({ sharedBy: user._id, isArchived: false, isRemoved: false })
+    .sort({ createdAt: -1 })
+    .populate('author', 'username displayName profilePicture isVerified');
+
+  res.status(200).json({ success: true, posts });
 });
 
 exports.reportPost = catchAsync(async (req, res, next) => {

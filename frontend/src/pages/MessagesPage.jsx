@@ -194,9 +194,16 @@ export default function MessagesPage() {
                 <span className="mt-1 block truncate text-[11px] text-slate-faint">{ownNote || 'Your note'}</span>
               </button>
               {following.map((user) => (
-                <button key={user.id} type="button" onClick={() => setActiveUserId(user.id)} className="w-16 shrink-0 text-center">
-                  <div className="relative mx-auto w-fit"><Avatar src={user.profilePicture?.url} alt={user.username} size="md" online={user.isOnline} />{user.note && <span className="absolute -right-8 -top-3 w-20 rounded-lg bg-paper px-1 py-0.5 text-[10px] leading-3 text-ink shadow">{user.note}</span>}</div>
-                  <span className="mt-1 block truncate text-[11px] text-slate-faint">{user.username}</span>
+                <button key={user.id} type="button" onClick={() => setActiveUserId(user.id)} className="w-20 shrink-0 text-center">
+                  <div className="mx-auto mb-1">
+                    <Avatar src={user.profilePicture?.url} alt={user.username} size="md" online={user.isOnline} />
+                  </div>
+                  {user.note && (
+                    <div className="mx-auto mb-1 max-w-[5rem] rounded-2xl bg-paper px-2 py-1 text-[10px] leading-4 text-ink shadow-sm">
+                      {user.note}
+                    </div>
+                  )}
+                  <span className="block truncate text-[11px] text-slate-faint">{user.username}</span>
                 </button>
               ))}
             </div>

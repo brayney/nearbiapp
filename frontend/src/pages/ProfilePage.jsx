@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { Grid3x3, MoreVertical, X, Bookmark } from 'lucide-react';
+import { Grid3x3, MoreVertical, Repeat, X, Bookmark } from 'lucide-react';
 import Avatar from '../components/Avatar';
 import { usersApi, postsApi } from '../api/resources';
 import { pushToast } from '../features/ui/uiSlice';
@@ -17,9 +17,11 @@ export default function ProfilePage() {
   const [isOwner, setIsOwner] = useState(false);
   const [posts, setPosts] = useState([]);
   const [savedPosts, setSavedPosts] = useState([]);
+  const [reposts, setReposts] = useState([]);
   const [activeTab, setActiveTab] = useState('posts');
   const [loading, setLoading] = useState(true);
   const [savedLoading, setSavedLoading] = useState(false);
+  const [repostsLoading, setRepostsLoading] = useState(false);
   const [followBusy, setFollowBusy] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [connections, setConnections] = useState({ type: null, users: [], loading: false });
@@ -85,11 +87,26 @@ export default function ProfilePage() {
     }
   };
 
+  const loadReposts = async () => {
+    setRepostsLoading(true);
+    try {
+      const response = await postsApi.getUserReposts(username);
+      setReposts(response.data.posts || []);
+    } catch (err) {
+      dispatch(pushToast(err.response?.data?.message || 'Could not load reposts.', 'error'));
+    } finally {
+      setRepostsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'saved' && isOwner) {
       loadSavedPosts();
     }
-  }, [activeTab, isOwner]);
+    if (activeTab === 'reposts' && isOwner) {
+      loadReposts();
+    }
+  }, [activeTab, isOwner, username]);
 
   const openConnections = async (type) => {
     if (!profile) return;
@@ -203,11 +220,9 @@ export default function ProfilePage() {
             <strong className="font-sans">{profile.postsCount}</strong> <span className="text-slate-faint">posts</span>
           </span>
           <button type="button" onClick={() => openConnections('followers')} className="text-left hover:text-paper transition-colors" aria-label={`View ${profile.username}'s followers`}>
-            <strong className="font-sans">{profile.followersCount}</strong>{' '}
             <span className="text-slate-faint">followers</span>
           </button>
           <button type="button" onClick={() => openConnections('following')} className="text-left hover:text-paper transition-colors" aria-label={`View who ${profile.username} follows`}>
-            <strong className="font-sans">{profile.followingCount}</strong>{' '}
             <span className="text-slate-faint">following</span>
           </button>
         </div>
@@ -223,14 +238,24 @@ export default function ProfilePage() {
               Posts
             </button>
             {isOwner && (
-              <button
-                type="button"
-                onClick={() => setActiveTab('saved')}
-                className={`inline-flex items-center gap-2 rounded-full px-3 py-2 transition ${activeTab === 'saved' ? 'bg-ink-soft text-paper' : 'hover:bg-ink-soft'}`}
-              >
-                <Bookmark size={14} />
-                Saved
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('saved')}
+                  className={`inline-flex items-center gap-2 rounded-full px-3 py-2 transition ${activeTab === 'saved' ? 'bg-ink-soft text-paper' : 'hover:bg-ink-soft'}`}
+                >
+                  <Bookmark size={14} />
+                  Saved
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('reposts')}
+                  className={`inline-flex items-center gap-2 rounded-full px-3 py-2 transition ${activeTab === 'reposts' ? 'bg-ink-soft text-paper' : 'hover:bg-ink-soft'}`}
+                >
+                  <Repeat size={14} />
+                  Reposts
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -243,6 +268,35 @@ export default function ProfilePage() {
           ) : (
             <div className="grid grid-cols-3 gap-1 pb-6">
               {savedPosts.map((post) => (
+                <Link
+                  key={post._id}
+                  to={`/post/${post._id}`}
+                  className="aspect-square bg-ink-soft overflow-hidden"
+                >
+                  {post.media?.[0] ? (
+                    <img src={post.media[0].url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center p-2 text-xs text-slate-faint text-center">
+                      {post.caption?.slice(0, 60)}
+                    </div>
+                  )}
+                  {post.media?.length > 1 && (
+                    <div className="absolute right-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[11px] font-semibold text-paper">
+                      {post.media.length}
+                    </div>
+                  )}
+                </Link>
+              ))}
+            </div>
+          )
+        ) : activeTab === 'reposts' ? (
+          repostsLoading ? (
+            <p className="text-slate-mute text-sm py-10">Loading reposts...</p>
+          ) : reposts.length === 0 ? (
+            <p className="text-slate-faint text-sm py-10 text-center">Reposts will appear here once you share a post.</p>
+          ) : (
+            <div className="grid grid-cols-3 gap-1 pb-6">
+              {reposts.map((post) => (
                 <Link
                   key={post._id}
                   to={`/post/${post._id}`}
