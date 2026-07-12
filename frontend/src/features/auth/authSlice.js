@@ -102,5 +102,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearAuthError, forceLogout } = authSlice.actions;
+export const { clearAuthError, forceLogout, setUser } = authSlice.actions;
 export default authSlice.reducer;
