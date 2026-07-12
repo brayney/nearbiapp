@@ -76,9 +76,9 @@ export default function RegisterPage() {
           <h2 className="mt-3 text-xl font-semibold text-paper">{STEP_TITLES[step]}</h2>
         </div>
 
-        <div className="space-y-6">
+        <div className="rounded-3xl border border-ink-line bg-ink-soft p-6 space-y-6">
           {step === 0 && (
-            <section className="rounded-3xl border border-ink-line bg-ink-soft p-6">
+            <div className="space-y-4">
               <FormInput label="Display name" value={form.displayName} onChange={update('displayName')} />
               <FormInput
                 label="Username"
@@ -95,11 +95,11 @@ export default function RegisterPage() {
                 autoComplete="email"
                 required
               />
-            </section>
+            </div>
           )}
 
           {step === 1 && (
-            <section className="rounded-3xl border border-ink-line bg-ink-soft p-6">
+            <div className="space-y-4">
               <FormInput
                 label="Password"
                 type="password"
@@ -117,11 +117,11 @@ export default function RegisterPage() {
                 required
               />
               <p className="text-xs text-slate-mute -mt-2 mb-4">At least 8 characters, including a number. Both values must match.</p>
-            </section>
+            </div>
           )}
 
           {step === 2 && (
-            <section className="rounded-3xl border border-ink-line bg-ink-soft p-6">
+            <div className="space-y-4">
               <FormInput label="Birth date" type="date" value={form.birthday} onChange={update('birthday')} required />
               <FormInput label="Age" value={age} readOnly placeholder="Calculated from your birth date" />
               <div className="mb-4">
@@ -135,43 +135,42 @@ export default function RegisterPage() {
                 </select>
               </div>
               <FormInput label="Nationality" value={form.nationality} onChange={update('nationality')} required />
-            </section>
+            </div>
           )}
 
           {step === 3 && (
-            <section className="rounded-3xl border border-ink-line bg-ink-soft p-6">
+            <div className="space-y-4">
               <FormInput label="Favorite pet" value={form.favoritePet} onChange={update('favoritePet')} autoComplete="off" required />
               <p className="text-xs text-slate-faint -mt-2 mb-4">This detail is used for account recovery.</p>
-            </section>
+            </div>
           )}
-        </div>
 
-        {(stepError || error) && (
-          <p className="text-coral text-sm mb-4 text-center">{stepError || error}</p>
-        )}
+          {(stepError || error) && (
+            <p className="text-coral text-sm text-center">{stepError || error}</p>
+          )}
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-          {step > 0 && (
+          <div className="flex items-center justify-end gap-3">
+            {step > 0 && (
+              <button
+                type="button"
+                onClick={prevStep}
+                className="inline-flex rounded-xl border border-ink-line bg-ink-soft px-5 py-2.5 text-sm font-semibold text-paper transition duration-200 hover:bg-ink/80 sm:max-w-[160px]"
+              >
+                Back
+              </button>
+            )}
             <button
-              type="button"
-              onClick={prevStep}
-              className="inline-flex rounded-xl border border-ink-line bg-ink-soft px-5 py-2.5 text-sm font-semibold text-paper transition duration-200 hover:bg-ink/80 sm:mr-auto sm:max-w-[160px]"
+              type="submit"
+              disabled={status === 'loading'}
+              className="inline-flex items-center gap-2 text-sm font-semibold text-teal-bright transition duration-200 hover:text-teal-bright/80 disabled:opacity-50"
             >
-              Back
+              {step < STEP_TITLES.length - 1
+                ? 'Proceed →'
+                : status === 'loading'
+                ? 'Creating account...'
+                : 'Create account'}
             </button>
-          )}
-
-          <button
-            type="submit"
-            disabled={status === 'loading'}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-teal-bright transition duration-200 hover:text-teal-bright/80 disabled:opacity-50"
-          >
-            {step < STEP_TITLES.length - 1
-              ? 'Proceed →'
-              : status === 'loading'
-              ? 'Creating account...'
-              : 'Create account'}
-          </button>
+          </div>
         </div>
       </form>
 
