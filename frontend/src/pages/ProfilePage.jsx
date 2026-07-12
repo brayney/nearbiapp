@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { Grid3x3, Settings, Repeat, X, Bookmark, Plus } from 'lucide-react';
+import { Grid3x3, Repeat, X, Bookmark, Plus } from 'lucide-react';
 import Avatar from '../components/Avatar';
 import { usersApi, postsApi } from '../api/resources';
 import { pushToast } from '../features/ui/uiSlice';
-import { logoutUser } from '../features/auth/authSlice';
+import { logoutUser, setUser } from '../features/auth/authSlice';
 
 export default function ProfilePage() {
   const { username } = useParams();
@@ -23,6 +23,9 @@ export default function ProfilePage() {
   const [savedLoading, setSavedLoading] = useState(false);
   const [repostsLoading, setRepostsLoading] = useState(false);
   const [followBusy, setFollowBusy] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [editData, setEditData] = useState({ displayName: '', username: '', bio: '' });
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [connections, setConnections] = useState({ type: null, users: [], loading: false });
   const menuRef = useRef(null);
@@ -108,6 +111,32 @@ export default function ProfilePage() {
     }
   }, [activeTab, isOwner, username]);
 
+  useEffect(() => {
+    if (!profile) return;
+    setEditData({
+      displayName: profile.displayName || '',
+      username: profile.username || '',
+      bio: profile.bio || '',
+    });
+  }, [profile]);
+
+  const handleSaveProfile = async (event) => {
+    event.preventDefault();
+    setSavingProfile(true);
+    try {
+      const response = await usersApi.updateProfile(editData);
+      const updatedUser = response.data?.user || response.data;
+      setProfile(updatedUser);
+      dispatch(setUser(updatedUser));
+      dispatch(pushToast('Profile updated', 'success'));
+      setEditing(false);
+    } catch (err) {
+      dispatch(pushToast(err.response?.data?.message || 'Could not update profile.', 'error'));
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
   const openConnections = async (type) => {
     if (!profile) return;
 
@@ -177,7 +206,14 @@ export default function ProfilePage() {
               {profile.bio && <p className="mt-3 text-sm text-slate-faint max-w-2xl">{profile.bio}</p>}
             </div>
 
-            {isOwner ? null : (
+            {isOwner ? (
+              <button
+                onClick={() => setEditing(true)}
+                className="min-w-[120px] rounded-2xl border border-ink-line bg-ink-soft px-4 py-2 text-sm font-semibold text-paper transition hover:bg-ink"
+              >
+                Edit profile
+              </button>
+            ) : (
               <div className="flex flex-wrap gap-3">
                 <button
                   onClick={handleFollowToggle}
@@ -318,6 +354,62 @@ export default function ProfilePage() {
           )}
         </div>
       </div>
+
+      {editing && (
+        <div className="fixed inset-0 z-50 flex items-end bg-black/60 sm:items-center sm:justify-center sm:p-4" onMouseDown={() => !savingProfile && setEditing(false)}>
+          <form
+            onSubmit={handleSaveProfile}
+            onMouseDown={(event) => event.stopPropagation()}
+            className="w-full max-w-md rounded-t-2xl border border-ink-line bg-ink p-5 sm:rounded-2xl"
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="font-display text-xl">Edit profile</h2>
+              <button type="button" onClick={() => setEditing(false)} className="rounded-full p-2 text-slate-faint hover:bg-ink-soft" aria-label="Close edit profile">
+                <X size={18} />
+              </button>
+            </div>
+
+            <label className="mb-3 block text-sm font-semibold text-paper">
+              Display name
+              <input
+                value={editData.displayName}
+                onChange={(event) => setEditData((prev) => ({ ...prev, displayName: event.target.value }))}
+                placeholder="Display name"
+                className="mt-2 w-full rounded-xl border border-ink-line bg-ink-soft px-3 py-2 text-sm text-paper outline-none focus:border-teal-bright"
+              />
+            </label>
+
+            <label className="mb-3 block text-sm font-semibold text-paper">
+              Username
+              <input
+                value={editData.username}
+                onChange={(event) => setEditData((prev) => ({ ...prev, username: event.target.value }))}
+                placeholder="Username"
+                className="mt-2 w-full rounded-xl border border-ink-line bg-ink-soft px-3 py-2 text-sm text-paper outline-none focus:border-teal-bright"
+              />
+            </label>
+
+            <label className="mb-4 block text-sm font-semibold text-paper">
+              Bio
+              <textarea
+                value={editData.bio}
+                onChange={(event) => setEditData((prev) => ({ ...prev, bio: event.target.value }))}
+                rows={4}
+                placeholder="Tell people about yourself"
+                className="mt-2 w-full resize-none rounded-xl border border-ink-line bg-ink-soft px-3 py-2 text-sm text-paper outline-none focus:border-teal-bright"
+              />
+            </label>
+
+            <button
+              type="submit"
+              disabled={savingProfile || !editData.username.trim()}
+              className="w-full rounded-xl bg-coral py-2.5 text-sm font-semibold text-ink transition disabled:opacity-50"
+            >
+              {savingProfile ? 'Saving…' : 'Save changes'}
+            </button>
+          </form>
+        </div>
+      )}
 
       {connections.type && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-labelledby="connections-title" onMouseDown={closeConnections}>

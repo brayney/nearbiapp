@@ -55,6 +55,9 @@ const authSlice = createSlice({
     forceLogout(state) {
       state.user = null;
     },
+    setUser(state, action) {
+      state.user = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
