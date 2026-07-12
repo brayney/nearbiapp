@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Avatar from './Avatar';
 import { toggleLike, toggleSave, addComment, removePost } from '../features/posts/postsSlice';
 import { postsApi } from '../api/resources';
@@ -11,6 +11,8 @@ function timeAgo(date) { const seconds = Math.floor((Date.now() - new Date(date)
 
 export default function PostCard({ post }) {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
   const currentUser = useSelector((state) => state.auth.user);
   const currentUserId = currentUser?.id || currentUser?._id;
   const [commentText, setCommentText] = useState('');
@@ -48,6 +50,16 @@ export default function PostCard({ post }) {
   };
   const handleComment = (event) => { event.preventDefault(); if (!commentText.trim()) return; dispatch(addComment({ postId: post._id, text: commentText.trim() })); setCommentText(''); };
   const handleShare = () => { navigator.clipboard?.writeText(`${window.location.origin}/post/${post._id}`); dispatch(pushToast('Link copied to clipboard', 'success')); };
+  const deletePost = async () => {
+    try {
+      await postsApi.deletePost(post._id);
+      dispatch(removePost(post._id));
+      dispatch(pushToast('Post deleted.', 'success'));
+      if (location.pathname === `/post/${post._id}`) navigate('/', { replace: true });
+    } catch (err) {
+      dispatch(pushToast(err.response?.data?.message || 'Could not delete post.', 'error'));
+    }
+  };
   const menuAction = async (action) => {
     setShowMenu(false);
     try {
@@ -57,10 +69,11 @@ export default function PostCard({ post }) {
       if (action === 'report') { await postsApi.reportPost(post._id, 'other', 'Reported from post menu.'); dispatch(pushToast('Report sent. Thank you.', 'success')); }
       if (action === 'archive') { const { data } = await postsApi.archivePost(post._id); dispatch(pushToast(data.isArchived ? 'Post archived.' : 'Post restored.', 'success')); }
       if (action === 'pin') { const { data } = await postsApi.pinPost(post._id); dispatch(pushToast(data.isPinned ? 'Post pinned.' : 'Post unpinned.', 'success')); }
+      if (action === 'delete') await deletePost();
     } catch (err) { dispatch(pushToast(err.response?.data?.message || 'This action could not be completed.', 'error')); }
   };
 
-  return <article className="border-b border-ink-line px-4 py-5 md:px-0"><header className="mb-3 flex items-center gap-3"><Link to={`/profile/${post.author?.username}`}><Avatar src={post.author?.profilePicture?.url} alt={post.author?.username} size="sm" /></Link><div><Link to={`/profile/${post.author?.username}`} className="text-sm font-semibold hover:underline">{post.author?.username}</Link><span className="ml-2 font-mono text-xs text-slate-faint">{timeAgo(post.createdAt)}</span></div><div className="relative ml-auto"><button onClick={() => setShowMenu((open) => !open)} className="text-slate-faint hover:text-paper" aria-label="Post options"><MoreHorizontal size={18} /></button>{showMenu && <div className="absolute right-0 top-7 z-20 w-48 overflow-hidden rounded-xl border border-ink-line bg-ink py-1 shadow-xl">{isOwner ? <><MenuButton onClick={() => menuAction('pin')}>Pin / unpin post</MenuButton><MenuButton onClick={() => menuAction('archive')}>Archive / restore post</MenuButton></> : <><MenuButton onClick={() => menuAction('interested')}>Interested</MenuButton><MenuButton onClick={() => menuAction('notInterested')}>Not interested</MenuButton><MenuButton onClick={() => menuAction('hide')}>Hide post</MenuButton><MenuButton danger onClick={() => menuAction('report')}>Report</MenuButton></>}</div>}</div></header>{mediaItems.length > 0 && <div className="mb-3 overflow-hidden rounded-2xl bg-ink-soft relative">
+  return <article className="border-b border-ink-line px-4 py-5 md:px-0"><header className="mb-3 flex items-center gap-3"><Link to={`/profile/${post.author?.username}`}><Avatar src={post.author?.profilePicture?.url} alt={post.author?.username} size="sm" /></Link><div><Link to={`/profile/${post.author?.username}`} className="text-sm font-semibold hover:underline">{post.author?.username}</Link><span className="ml-2 font-mono text-xs text-slate-faint">{timeAgo(post.createdAt)}</span></div><div className="relative ml-auto"><button onClick={() => setShowMenu((open) => !open)} className="text-slate-faint hover:text-paper" aria-label="Post options"><MoreHorizontal size={18} /></button>{showMenu && <div className="absolute right-0 top-7 z-20 w-48 overflow-hidden rounded-xl border border-ink-line bg-ink py-1 shadow-xl">{isOwner ? <><MenuButton onClick={() => menuAction('pin')}>Pin / unpin post</MenuButton><MenuButton onClick={() => menuAction('archive')}>Archive / restore post</MenuButton><MenuButton danger onClick={() => menuAction('delete')}>Delete post</MenuButton></> : <><MenuButton onClick={() => menuAction('interested')}>Interested</MenuButton><MenuButton onClick={() => menuAction('notInterested')}>Not interested</MenuButton><MenuButton onClick={() => menuAction('hide')}>Hide post</MenuButton><MenuButton danger onClick={() => menuAction('report')}>Report</MenuButton></>}</div>}</div></header>{mediaItems.length > 0 && <div className="mb-3 overflow-hidden rounded-2xl bg-ink-soft relative">
         <div className="relative min-h-[280px] overflow-hidden bg-black/5">
           {selectedMedia?.type === 'video' ? (
             <video
