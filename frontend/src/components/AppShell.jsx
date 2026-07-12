@@ -164,7 +164,7 @@ export default function AppShell() {
         <button
           type="button"
           onClick={() => setMobileMenuOpen(true)}
-          className="fixed top-[calc(0.75rem+env(safe-area-inset-top))] right-4 z-50 flex h-11 w-11 items-center justify-center rounded-xl border border-ink-line bg-ink-soft text-paper shadow-lg shadow-black/20 md:hidden"
+          className="fixed top-[calc(0.75rem+env(safe-area-inset-top))] right-4 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-ink/95 text-paper shadow-xl shadow-black/20 md:hidden"
           aria-label="Open menu"
           aria-expanded={mobileMenuOpen}
         >

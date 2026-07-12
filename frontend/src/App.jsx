@@ -23,7 +23,6 @@ import NearbyPage from './pages/NearbyPage';
 import PostDetailPage from './pages/PostDetailPage';
 import MessagesPage from './pages/MessagesPage';
 import NotificationsPage from './pages/NotificationsPage';
-import LandingPage from './pages/LandingPage';
 
 export default function App() {
   const dispatch = useDispatch();
@@ -71,7 +70,7 @@ export default function App() {
             <Route path="/messages" element={<MessagesPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
           </Route>
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={<LoginPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <ToastStack />
