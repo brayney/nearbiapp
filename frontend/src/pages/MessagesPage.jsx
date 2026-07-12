@@ -194,10 +194,10 @@ export default function MessagesPage() {
                 <span className="mt-1 block truncate text-[11px] text-slate-faint">{ownNote || 'Your note'}</span>
               </button>
               {following.map((user) => (
-                <button key={user.id} type="button" onClick={() => setActiveUserId(user.id)} className="relative w-20 shrink-0 text-center">
-                  <div className="relative mx-auto mb-1 h-[52px] w-[52px]">
+                <button key={user.id} type="button" onClick={() => setActiveUserId(user.id)} className="relative w-20 shrink-0 overflow-visible text-center">
+                  <div className="relative mx-auto mb-1 h-[56px] w-[56px] overflow-visible">
                     {user.note && (
-                      <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-full max-w-[5rem] rounded-2xl bg-paper px-2 py-1 text-[10px] leading-4 text-ink shadow-sm">
+                      <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-full z-10 w-max rounded-full bg-paper px-2 py-1 text-[10px] leading-4 text-ink shadow-sm">
                         {user.note}
                       </div>
                     )}
