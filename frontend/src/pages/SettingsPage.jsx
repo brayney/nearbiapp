@@ -16,9 +16,9 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-xl mx-auto px-4 py-6">
-      <h1 className="font-display text-2xl mb-6">Settings</h1>
-
-      <div className="flex gap-1 mb-8 border-b border-ink-line">
+      <header className="sticky top-0 z-10 -mx-4 mb-8 border-b border-ink-line bg-ink/95 px-4 pt-4 backdrop-blur">
+      <h1 className="font-display text-2xl mb-5">Settings</h1>
+      <div className="flex gap-1 border-b border-ink-line">
         {TABS.map((t) => (
           <button
             key={t}
@@ -31,6 +31,7 @@ export default function SettingsPage() {
           </button>
         ))}
       </div>
+      </header>
 
       {tab === 'Profile' && <ProfileTab user={user} dispatch={dispatch} />}
       {tab === 'Privacy' && <PrivacyTab dispatch={dispatch} />}

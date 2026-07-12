@@ -5,9 +5,15 @@
 @layer base {
   html {
     background-color: #10151b;
+    min-height: 100%;
   }
   body {
     @apply bg-ink text-paper font-sans antialiased;
+    min-height: 100dvh;
+    overscroll-behavior-y: none;
+  }
+  #root {
+    min-height: 100dvh;
   }
   ::selection {
     background: rgba(255, 90, 95, 0.35);
@@ -18,7 +24,24 @@
   }
 }
 
+/* Prevent iOS Safari from zooming into compact form controls. */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 @layer utilities {
+  /* Keep every surface scrollable while removing browser scrollbar tracks. */
+  * {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
+  }
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }

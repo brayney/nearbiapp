@@ -61,7 +61,7 @@ export default function ExplorePage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
-      <h1 className="font-display text-2xl mb-6">Explore</h1>
+      <header className="sticky top-0 z-10 -mx-4 mb-6 border-b border-ink-line bg-ink/95 px-4 py-4 backdrop-blur"><h1 className="font-display text-2xl">Explore</h1></header>
 
       {loading ? (
         <div className="grid grid-cols-3 gap-1">

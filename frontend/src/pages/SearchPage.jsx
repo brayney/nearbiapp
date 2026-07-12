@@ -26,9 +26,9 @@ export default function SearchPage() {
 
   return (
     <div className="max-w-xl mx-auto px-4 py-6">
-      <h1 className="font-display text-2xl mb-5">Search</h1>
-
-      <div className="flex items-center gap-2 bg-ink-soft border border-ink-line rounded-xl px-4 py-2.5 mb-6">
+      <header className="sticky top-0 z-10 -mx-4 mb-6 border-b border-ink-line bg-ink/95 px-4 py-4 backdrop-blur">
+      <h1 className="font-display text-2xl mb-4">Search</h1>
+      <div className="flex items-center gap-2 bg-ink-soft border border-ink-line rounded-xl px-4 py-2.5">
         <SearchIcon size={18} className="text-slate-faint" />
         <input
           value={query}
@@ -37,6 +37,7 @@ export default function SearchPage() {
           className="flex-1 bg-transparent outline-none placeholder-slate-mute text-[15px]"
         />
       </div>
+      </header>
 
       {loading && <p className="text-slate-mute text-sm">Searching...</p>}
 

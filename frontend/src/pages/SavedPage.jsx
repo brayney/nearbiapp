@@ -15,7 +15,7 @@ export default function SavedPage() {
 
   return (
     <div className="max-w-xl mx-auto">
-      <header className="px-4 md:px-0 py-4">
+      <header className="sticky top-0 z-10 border-b border-ink-line bg-ink/95 px-4 py-4 backdrop-blur md:px-0">
         <h1 className="font-display text-xl">Saved</h1>
       </header>
 

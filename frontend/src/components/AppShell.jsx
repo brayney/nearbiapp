@@ -55,9 +55,9 @@ export default function AppShell() {
   };
 
   return (
-    <div className="min-h-screen bg-ink text-paper flex overflow-hidden">
+    <div className="flex min-h-[100dvh] bg-ink text-paper md:h-screen md:overflow-hidden">
       {/* Desktop / tablet sidebar */}
-      <aside className="hidden md:flex md:flex-col w-[76px] lg:w-64 shrink-0 border-r border-ink-line px-2 lg:px-4 py-6 h-screen overflow-y-auto">
+      <aside className="hidden h-[100dvh] shrink-0 overflow-y-auto border-r border-ink-line px-2 py-6 md:flex md:flex-col md:w-[76px] lg:w-64 lg:px-4">
         <div className="px-2 mb-8 flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-coral flex items-center justify-center font-display text-ink font-semibold">
             n
@@ -94,24 +94,24 @@ export default function AppShell() {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 min-w-0 pb-16 md:pb-0 overflow-y-auto h-screen">
+      <main className="h-[100dvh] min-w-0 flex-1 overflow-y-auto pb-[calc(5rem+env(safe-area-inset-bottom))] md:h-screen md:pb-0">
         <Outlet />
       </main>
 
       {/* Mobile floating create button */}
       <button
         onClick={() => dispatch(openCreatePost())}
-        className="md:hidden fixed bottom-20 right-4 w-14 h-14 rounded-full bg-coral text-ink flex items-center justify-center shadow-lg shadow-coral-glow z-40"
+        className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-coral text-ink shadow-lg shadow-coral-glow md:hidden"
       >
         <PlusSquare size={24} strokeWidth={2} />
       </button>
 
       {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-ink-soft border-t border-ink-line flex items-center justify-around py-2 z-40">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-ink-line bg-ink-soft px-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2 md:hidden">
         {[NAV_ITEMS[0], NAV_ITEMS[1], NAV_ITEMS[3], { to: '/messages', icon: MessageCircle }, `profile`].map(
           (item, i) =>
             item === 'profile' ? (
-              <button key="profile" onClick={() => navigate(`/profile/${user?.username}`)} className="p-2">
+              <button key="profile" onClick={() => navigate(`/profile/${user?.username}`)} className="flex h-11 w-11 items-center justify-center rounded-xl p-1">
                 <Avatar src={user?.profilePicture?.url} alt={user?.username} size="sm" />
               </button>
             ) : (
@@ -119,7 +119,7 @@ export default function AppShell() {
                 key={item.to}
                 to={item.to}
                 end={item.end}
-                className={({ isActive }) => `p-2 ${isActive ? 'text-coral' : 'text-slate-faint'}`}
+                className={({ isActive }) => `flex h-11 w-11 items-center justify-center rounded-xl ${isActive ? 'text-coral' : 'text-slate-faint'}`}
               >
                 <item.icon size={22} strokeWidth={1.75} />
               </NavLink>

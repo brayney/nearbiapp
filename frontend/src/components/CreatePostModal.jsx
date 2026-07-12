@@ -52,8 +52,8 @@ export default function CreatePostModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
-      <div className="bg-ink-soft border border-ink-line rounded-2xl w-full max-w-lg overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3 sm:p-4">
+      <div className="max-h-[calc(100dvh-1.5rem)] w-full max-w-lg overflow-y-auto rounded-2xl border border-ink-line bg-ink-soft sm:max-h-[calc(100dvh-2rem)]">
         <header className="flex items-center justify-between px-5 py-4 border-b border-ink-line">
           <h2 className="font-display text-lg">New post</h2>
           <button onClick={handleClose} className="text-slate-faint hover:text-paper">

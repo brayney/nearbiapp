@@ -32,7 +32,6 @@ export default function MessagesPage() {
   const loadConversations = async () => {
     const { data } = await messagesApi.getConversations();
     setConversations(data.conversations || []);
-    if (!activeUserId && data.conversations?.[0]) setActiveUserId(data.conversations[0].id);
   };
 
   useEffect(() => {
@@ -40,7 +39,7 @@ export default function MessagesPage() {
     window.addEventListener('resize', resizeListener);
     loadConversations().catch(() => dispatch(pushToast('Could not load messages.', 'error'))).finally(() => setLoading(false));
     return () => window.removeEventListener('resize', resizeListener);
-  }, [isMobile]);
+  }, []);
 
   useEffect(() => {
     if (!activeUserId) return;
@@ -80,7 +79,7 @@ export default function MessagesPage() {
   if (activeUserId && threadError) body = <div className="m-auto max-w-sm px-6 text-center"><p className="font-semibold">Conversation unavailable</p><p className="mt-2 text-sm text-slate-faint">{threadError}</p></div>;
   if (activeUserId && !threadError && !participant) body = <p className="m-auto text-sm text-slate-faint">Opening conversation…</p>;
   if (participant) body = <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-ink">
-    <header className="sticky top-0 z-10 flex-shrink-0 items-center border-b border-ink-line bg-ink px-4 py-3 sm:px-5">
+    <header className="z-10 flex-shrink-0 items-center border-b border-ink-line bg-ink px-4 py-3 sm:px-5">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           {isMobile && (
@@ -102,7 +101,7 @@ export default function MessagesPage() {
         <Info size={22} className="text-slate-faint" />
       </div>
     </header>
-    <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 sm:px-5 sm:py-5 pb-32">
+    <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5 sm:py-5">
       <div className="space-y-3">
         {messages.map((message) => {
           const own = String(message.sender) === String(currentUser?.id || currentUser?._id);
@@ -123,7 +122,7 @@ export default function MessagesPage() {
       </div>
       <div ref={bottomRef} />
     </div>
-    <div className="sticky bottom-0 z-10 flex-shrink-0 border-t border-ink-line bg-ink px-4 py-3 sm:px-5">
+    <div className="z-10 flex-shrink-0 border-t border-ink-line bg-ink px-4 py-3 sm:px-5">
       <form onSubmit={handleSend} className="flex items-center gap-2 rounded-full border border-ink-line bg-[#161616] px-3 py-2 shadow-inner sm:px-4">
         <label className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-ink-soft text-slate-faint transition hover:text-paper">
           <Image size={18} />
@@ -160,12 +159,13 @@ export default function MessagesPage() {
   </div>;
 
   return (
-    <div className="h-screen overflow-hidden bg-ink text-paper md:p-5">
+    <div className="fixed inset-x-0 top-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] overflow-hidden bg-ink text-paper md:static md:h-screen md:p-5">
       <div className="mx-auto flex h-full max-w-6xl overflow-hidden bg-ink-soft md:min-h-[calc(100vh-40px)] md:rounded-2xl md:border md:border-ink-line">
-        <aside className={`w-full shrink-0 border-r border-ink-line sm:w-[350px] ${activeUserId && isMobile ? 'hidden' : 'block'}`}>
+        <aside className={`h-full w-full shrink-0 flex-col overflow-hidden border-r border-ink-line sm:w-[350px] ${activeUserId && isMobile ? 'hidden' : 'flex'}`}>
           <header className="flex h-[60px] items-center justify-center border-b border-ink-line px-5">
             <h1 className="font-display text-xl">Messages</h1>
           </header>
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           {loading ? (
             <p className="p-5 text-sm text-slate-faint">Loading messages…</p>
           ) : conversations.length === 0 ? (
@@ -232,6 +232,7 @@ export default function MessagesPage() {
             </div>
 
           )}
+          </div>
         </aside>
         <section className={`min-w-0 min-h-0 h-full flex flex-1 flex-col overflow-hidden ${activeUserId ? 'flex' : 'hidden sm:flex'}`}>{body}</section>
       </div>
