@@ -100,6 +100,7 @@ export default function AppShell() {
   });
 
   const showMobileCreate = ['/feed', '/explore'].includes(location.pathname);
+  const showBurger = location.pathname === '/feed';
   const mobileNavItems = [navItems[0], navItems[1], navItems[3], navItems[5], navItems[4]];
 
   return (
@@ -159,15 +160,17 @@ export default function AppShell() {
       )}
 
       {/* Mobile menu */}
-      <button
-        type="button"
-        onClick={() => setMobileMenuOpen(true)}
-        className="fixed top-[calc(0.75rem+env(safe-area-inset-top))] right-4 z-50 flex h-11 w-11 items-center justify-center rounded-xl border border-ink-line bg-ink-soft text-paper shadow-lg shadow-black/20 md:hidden"
-        aria-label="Open menu"
-        aria-expanded={mobileMenuOpen}
-      >
-        <Menu size={22} />
-      </button>
+      {showBurger && (
+        <button
+          type="button"
+          onClick={() => setMobileMenuOpen(true)}
+          className="fixed top-[calc(0.75rem+env(safe-area-inset-top))] right-4 z-50 flex h-11 w-11 items-center justify-center rounded-xl border border-ink-line bg-ink-soft text-paper shadow-lg shadow-black/20 md:hidden"
+          aria-label="Open menu"
+          aria-expanded={mobileMenuOpen}
+        >
+          <Menu size={22} />
+        </button>
+      )}
 
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-[60] md:hidden" role="dialog" aria-modal="true" aria-label="Navigation menu">
@@ -182,6 +185,17 @@ export default function AppShell() {
                 <X size={22} />
               </button>
             </div>
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                navigate(`/profile/${user?.username}`);
+              }}
+              className="mb-4 flex items-center gap-3 rounded-xl bg-ink-soft px-3 py-3 text-sm font-medium text-paper transition hover:bg-ink"
+            >
+              <Avatar src={user?.profilePicture?.url} alt={user?.username} size="sm" />
+              <span className="truncate">Profile</span>
+            </button>
             <nav className="space-y-2">
               {[navItems[0], navItems[1], navItems[3], navItems[4]].map((item) => (
                 <NavLink
