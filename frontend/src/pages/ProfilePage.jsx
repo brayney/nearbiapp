@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { Settings, Grid3x3 } from 'lucide-react';
+import { Settings, Grid3x3, LogOut as LogOutIcon } from 'lucide-react';
 import Avatar from '../components/Avatar';
 import { usersApi, postsApi } from '../api/resources';
 import { pushToast } from '../features/ui/uiSlice';
+import { logoutUser } from '../features/auth/authSlice';
 
 export default function ProfilePage() {
   const { username } = useParams();
@@ -40,6 +41,7 @@ export default function ProfilePage() {
     };
   }, [username, dispatch]);
 
+  const navigate = useNavigate();
   const handleFollowToggle = async () => {
     if (!profile) return;
     setFollowBusy(true);
@@ -58,6 +60,11 @@ export default function ProfilePage() {
     } finally {
       setFollowBusy(false);
     }
+  };
+
+  const handleLogout = async () => {
+    await dispatch(logoutUser());
+    navigate('/login');
   };
 
   if (loading) {
@@ -91,12 +98,20 @@ export default function ProfilePage() {
             className="border-4 border-ink rounded-full"
           />
           {isOwner ? (
-            <Link
-              to="/settings"
-              className="flex items-center gap-1.5 text-sm font-medium border border-ink-line rounded-xl px-3 py-2 hover:bg-ink-soft"
-            >
-              <Settings size={16} /> Edit profile
-            </Link>
+            <div className="flex flex-col gap-2">
+              <Link
+                to="/settings"
+                className="flex items-center gap-1.5 text-sm font-medium border border-ink-line rounded-xl px-3 py-2 hover:bg-ink-soft"
+              >
+                <Settings size={16} /> Edit profile
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-1.5 text-sm font-medium border border-ink-line rounded-xl px-3 py-2 text-coral hover:bg-ink-soft"
+              >
+                <LogOutIcon size={16} /> Log out
+              </button>
+            </div>
           ) : (
             <div className="flex items-center gap-2">
               <button

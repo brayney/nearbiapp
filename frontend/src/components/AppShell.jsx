@@ -1,5 +1,5 @@
-import React from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Home,
@@ -9,13 +9,12 @@ import {
   Bell,
   Bookmark,
   PlusSquare,
-  User,
-  LogOut,
   Radar,
 } from 'lucide-react';
 import Avatar from './Avatar';
 import { logoutUser } from '../features/auth/authSlice';
 import { openCreatePost } from '../features/ui/uiSlice';
+import { messagesApi, notificationsApi } from '../api/resources';
 
 const NAV_ITEMS = [
   { to: '/', icon: Home, label: 'Home', end: true },
@@ -27,19 +26,24 @@ const NAV_ITEMS = [
   { to: '/saved', icon: Bookmark, label: 'Saved' },
 ];
 
-function NavItem({ to, icon: Icon, label, end, soon }) {
+function NavItem({ to, icon: Icon, label, end, soon, badge = 0 }) {
   return (
     <NavLink
       to={to}
       end={end}
       className={({ isActive }) =>
-        `group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors ${
+        `relative group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors ${
           isActive ? 'bg-ink-soft text-paper' : 'text-slate-faint hover:text-paper hover:bg-ink-soft/60'
         }`
       }
     >
       <Icon size={20} strokeWidth={1.75} />
       <span className="font-medium text-[15px] hidden lg:inline">{label}</span>
+      {badge > 0 && (
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-coral px-2 py-0.5 text-[11px] font-semibold text-ink lg:right-4">
+          {badge}
+        </span>
+      )}
     </NavLink>
   );
 }
@@ -47,12 +51,46 @@ function NavItem({ to, icon: Icon, label, end, soon }) {
 export default function AppShell() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const user = useSelector((s) => s.auth.user);
+  const [messagesCount, setMessagesCount] = useState(0);
+  const [notificationsCount, setNotificationsCount] = useState(0);
 
   const handleLogout = async () => {
     await dispatch(logoutUser());
     navigate('/login');
   };
+
+  const loadBadges = async () => {
+    try {
+      const [messagesRes, notificationsRes] = await Promise.all([
+        messagesApi.getConversations(),
+        notificationsApi.getNotifications(),
+      ]);
+      const conversations = messagesRes.data.conversations || [];
+      const unreadMessages = conversations.reduce((acc, conversation) => acc + (conversation.unread || 0), 0);
+      const notifications = notificationsRes.data.notifications || [];
+      const unreadNotifications = notifications.filter((item) => !item.read).length;
+      setMessagesCount(unreadMessages);
+      setNotificationsCount(unreadNotifications);
+    } catch {
+      setMessagesCount(0);
+      setNotificationsCount(0);
+    }
+  };
+
+  useEffect(() => {
+    loadBadges();
+  }, [location.pathname]);
+
+  const navItems = NAV_ITEMS.map((item) => {
+    if (item.to === '/messages') return { ...item, badge: messagesCount };
+    if (item.to === '/notifications') return { ...item, badge: notificationsCount };
+    return item;
+  });
+
+  const showMobileCreate = ['/','/explore'].includes(location.pathname);
+  const mobileNavItems = [navItems[0], navItems[1], navItems[5], navItems[4]];
 
   return (
     <div className="flex min-h-[100dvh] bg-ink text-paper md:h-screen md:overflow-hidden">
@@ -66,18 +104,20 @@ export default function AppShell() {
         </div>
 
         <nav className="flex flex-col gap-1 flex-1">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <NavItem key={item.to} {...item} />
           ))}
         </nav>
 
-        <button
-          onClick={() => dispatch(openCreatePost())}
-          className="mt-2 flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-xl bg-coral text-ink font-semibold hover:bg-coral-dim transition-colors"
-        >
-          <PlusSquare size={20} strokeWidth={2} />
-          <span className="hidden lg:inline text-[15px]">Create</span>
-        </button>
+        {showMobileCreate && (
+          <button
+            onClick={() => dispatch(openCreatePost())}
+            className="mt-2 flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-xl bg-coral text-ink font-semibold hover:bg-coral-dim transition-colors"
+          >
+            <PlusSquare size={20} strokeWidth={2} />
+            <span className="hidden lg:inline text-[15px]">Create</span>
+          </button>
+        )}
 
         <div className="mt-6 pt-6 border-t border-ink-line flex items-center gap-3 px-1">
           <button
@@ -86,9 +126,6 @@ export default function AppShell() {
           >
             <Avatar src={user?.profilePicture?.url} alt={user?.username} size="sm" />
             <span className="hidden lg:block truncate text-sm font-medium">{user?.username}</span>
-          </button>
-          <button onClick={handleLogout} className="text-slate-faint hover:text-coral shrink-0" title="Log out">
-            <LogOut size={18} />
           </button>
         </div>
       </aside>
@@ -99,39 +136,36 @@ export default function AppShell() {
       </main>
 
       {/* Mobile floating create button */}
-      <button
-        onClick={() => dispatch(openCreatePost())}
-        className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-coral text-ink shadow-lg shadow-coral-glow md:hidden"
-      >
-        <PlusSquare size={24} strokeWidth={2} />
-      </button>
+      {showMobileCreate && (
+        <button
+          onClick={() => dispatch(openCreatePost())}
+          className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-coral text-ink shadow-lg shadow-coral-glow md:hidden"
+        >
+          <PlusSquare size={24} strokeWidth={2} />
+        </button>
+      )}
 
       {/* Mobile bottom nav */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-ink-line bg-ink-soft px-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2 md:hidden">
-        {[NAV_ITEMS[0], NAV_ITEMS[1], NAV_ITEMS[3], { to: '/messages', icon: MessageCircle }, `profile`, { action: handleLogout, icon: LogOut }].map(
-          (item, i) =>
+        {[mobileNavItems[0], mobileNavItems[1], mobileNavItems[2], mobileNavItems[3], 'profile'].map(
+          (item) =>
             item === 'profile' ? (
               <button key="profile" onClick={() => navigate(`/profile/${user?.username}`)} className="flex h-11 w-11 items-center justify-center rounded-xl p-1">
                 <Avatar src={user?.profilePicture?.url} alt={user?.username} size="sm" />
-              </button>
-            ) : item.action ? (
-              <button
-                key="logout"
-                type="button"
-                onClick={item.action}
-                className="flex h-11 w-11 items-center justify-center rounded-xl text-slate-faint hover:text-coral"
-                aria-label="Log out"
-              >
-                <item.icon size={22} strokeWidth={1.75} />
               </button>
             ) : (
               <NavLink
                 key={item.to}
                 to={item.to}
                 end={item.end}
-                className={({ isActive }) => `flex h-11 w-11 items-center justify-center rounded-xl ${isActive ? 'text-coral' : 'text-slate-faint'}`}
+                className={({ isActive }) => `relative flex h-11 w-11 items-center justify-center rounded-xl ${isActive ? 'text-coral' : 'text-slate-faint'}`}
               >
                 <item.icon size={22} strokeWidth={1.75} />
+                {item.badge > 0 && (
+                  <span className="absolute right-0 top-0 rounded-full bg-coral px-1.5 text-[11px] font-semibold text-ink">
+                    {item.badge > 9 ? '9+' : item.badge}
+                  </span>
+                )}
               </NavLink>
             )
         )}
