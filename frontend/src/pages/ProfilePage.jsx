@@ -10,11 +10,11 @@ import { logoutUser, setUser } from '../features/auth/authSlice';
 export default function ProfilePage() {
   const { username } = useParams();
   const dispatch = useDispatch();
+  const currentUser = useSelector((state) => state.auth.user);
 
   const [profile, setProfile] = useState(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followsYou, setFollowsYou] = useState(false);
-  const [isOwner, setIsOwner] = useState(false);
   const [posts, setPosts] = useState([]);
   const [savedPosts, setSavedPosts] = useState([]);
   const [reposts, setReposts] = useState([]);
@@ -28,6 +28,7 @@ export default function ProfilePage() {
   const [editData, setEditData] = useState({ displayName: '', username: '', bio: '' });
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [connections, setConnections] = useState({ type: null, users: [], loading: false });
+  const isOwner = Boolean(profile && currentUser && profile.username === currentUser.username);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -36,10 +37,10 @@ export default function ProfilePage() {
     Promise.all([usersApi.getProfile(username), postsApi.getUserPosts(username)])
       .then(([profileRes, postsRes]) => {
         if (cancelled) return;
-        setProfile(profileRes.data.user);
+        const fetchedUser = profileRes.data.user;
+        setProfile(fetchedUser);
         setIsFollowing(profileRes.data.isFollowing);
         setFollowsYou(profileRes.data.followsYou);
-        setIsOwner(profileRes.data.isOwner);
         setPosts(postsRes.data.posts);
       })
       .catch(() => {

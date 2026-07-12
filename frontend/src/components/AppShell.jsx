@@ -44,7 +44,7 @@ function NavItem({ to, icon: Icon, label, end, soon, badge = 0 }) {
       }
     >
       <Icon size={20} strokeWidth={1.75} />
-      <span className="font-medium text-[15px] hidden lg:inline">{label}</span>
+      <span className="font-medium text-[15px] hidden md:inline">{label}</span>
       {badge > 0 && (
         <span className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-coral px-2 py-0.5 text-[11px] font-semibold text-ink lg:right-4">
           {badge}
@@ -102,7 +102,7 @@ export default function AppShell() {
   });
 
   const showMobileCreate = ['/feed', '/explore'].includes(location.pathname);
-  const showBurger = /^\/feed(?:\/|$)/.test(location.pathname);
+  const showBurger = true;
   const mobileNavItems = [navItems[0], navItems[1], navItems[3], navItems[5], navItems[4], navItems[7]];
 
   return (
@@ -138,14 +138,14 @@ export default function AppShell() {
             className="flex items-center gap-3 flex-1 min-w-0 rounded-xl bg-ink-soft px-3 py-3 text-sm font-medium text-paper transition hover:bg-ink"
           >
             <Avatar src={user?.profilePicture?.url} alt={user?.username} size="sm" />
-            <span className="hidden lg:block truncate text-sm font-medium">{user?.username}</span>
+            <span className="hidden md:block truncate text-sm font-medium">{user?.username}</span>
           </button>
           <button
             onClick={() => navigate('/settings')}
             className="flex items-center gap-3 rounded-xl bg-ink-soft px-3 py-3 text-sm font-medium text-paper transition hover:bg-ink"
           >
             <Settings size={20} />
-            <span className="hidden lg:block">Settings</span>
+            <span className="hidden md:block">Settings</span>
           </button>
         </div>
       </aside>
