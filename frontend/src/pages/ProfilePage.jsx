@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { Grid3x3, MoreVertical } from 'lucide-react';
+import { Grid3x3, MoreVertical, X } from 'lucide-react';
 import Avatar from '../components/Avatar';
 import { usersApi, postsApi } from '../api/resources';
 import { pushToast } from '../features/ui/uiSlice';
@@ -19,6 +19,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [followBusy, setFollowBusy] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [connections, setConnections] = useState({ type: null, users: [], loading: false });
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -69,6 +70,23 @@ export default function ProfilePage() {
     navigate('/login');
   };
 
+  const openConnections = async (type) => {
+    if (!profile) return;
+
+    setConnections({ type, users: [], loading: true });
+    try {
+      const response = type === 'followers'
+        ? await usersApi.getFollowers(profile.username)
+        : await usersApi.getFollowing(profile.username);
+      setConnections({ type, users: response.data[type] || [], loading: false });
+    } catch (err) {
+      setConnections({ type: null, users: [], loading: false });
+      dispatch(pushToast(err.response?.data?.message || `Could not load ${type}`, 'error'));
+    }
+  };
+
+  const closeConnections = () => setConnections({ type: null, users: [], loading: false });
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -97,45 +115,6 @@ export default function ProfilePage() {
       <div className="h-40 md:h-56 bg-ink-soft relative">
         {profile.coverPhoto?.url && (
           <img src={profile.coverPhoto.url} alt="" className="w-full h-full object-cover" />
-        )}
-        {isOwner && (
-          <div className="absolute right-4 top-4">
-            <div className="relative" ref={menuRef}>
-              <button
-                type="button"
-                onClick={() => setShowProfileMenu((open) => !open)}
-                className="rounded-full bg-ink/80 p-2 text-slate-faint shadow-xl transition hover:bg-ink"
-                aria-label="Open profile actions"
-              >
-                <MoreVertical size={20} />
-              </button>
-              {showProfileMenu && (
-                <div className="absolute right-0 mt-2 w-48 overflow-hidden rounded-2xl border border-ink-line bg-ink py-2 shadow-xl">
-                  <Link
-                    to="/settings"
-                    onClick={() => setShowProfileMenu(false)}
-                    className="block px-4 py-2 text-sm text-paper hover:bg-ink-soft"
-                  >
-                    Settings
-                  </Link>
-                  <Link
-                    to="/settings?tab=Privacy"
-                    onClick={() => setShowProfileMenu(false)}
-                    className="block px-4 py-2 text-sm text-paper hover:bg-ink-soft"
-                  >
-                    Privacy
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="w-full text-left px-4 py-2 text-sm text-coral hover:bg-ink-soft"
-                  >
-                    Log out
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
         )}
       </div>
 
@@ -169,9 +148,31 @@ export default function ProfilePage() {
           )}
         </div>
 
-        <h1 className="font-display text-xl flex items-center gap-2">
-          {profile.displayName || profile.username}
-        </h1>
+        <div className="flex items-start justify-between gap-3">
+          <h1 className="font-display text-xl flex items-center gap-2">
+            {profile.displayName || profile.username}
+          </h1>
+          {isOwner && (
+            <div className="relative -mt-1" ref={menuRef}>
+              <button
+                type="button"
+                onClick={() => setShowProfileMenu((open) => !open)}
+                className="rounded-full p-2 text-slate-faint transition hover:bg-ink-soft hover:text-paper"
+                aria-label="Open profile actions"
+                aria-expanded={showProfileMenu}
+              >
+                <MoreVertical size={20} />
+              </button>
+              {showProfileMenu && (
+                <div className="absolute right-0 z-10 mt-2 w-48 overflow-hidden rounded-2xl border border-ink-line bg-ink py-2 shadow-xl">
+                  <Link to="/settings" onClick={() => setShowProfileMenu(false)} className="block px-4 py-2 text-sm text-paper hover:bg-ink-soft">Settings</Link>
+                  <Link to="/settings?tab=Privacy" onClick={() => setShowProfileMenu(false)} className="block px-4 py-2 text-sm text-paper hover:bg-ink-soft">Privacy</Link>
+                  <button type="button" onClick={handleLogout} className="w-full text-left px-4 py-2 text-sm text-coral hover:bg-ink-soft">Log out</button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
         <p className="text-slate-faint text-sm mb-3">@{profile.username}</p>
         {followsYou && <p className="text-sm text-coral mb-2">Follows you</p>}
         {profile.bio && <p className="text-[15px] mb-3 max-w-md">{profile.bio}</p>}
@@ -180,14 +181,14 @@ export default function ProfilePage() {
           <span>
             <strong className="font-sans">{profile.postsCount}</strong> <span className="text-slate-faint">posts</span>
           </span>
-          <span>
+          <button type="button" onClick={() => openConnections('followers')} className="text-left hover:text-paper transition-colors" aria-label={`View ${profile.username}'s followers`}>
             <strong className="font-sans">{profile.followersCount}</strong>{' '}
             <span className="text-slate-faint">followers</span>
-          </span>
-          <span>
+          </button>
+          <button type="button" onClick={() => openConnections('following')} className="text-left hover:text-paper transition-colors" aria-label={`View who ${profile.username} follows`}>
             <strong className="font-sans">{profile.followingCount}</strong>{' '}
             <span className="text-slate-faint">following</span>
-          </span>
+          </button>
         </div>
 
         <div className="flex items-center gap-2 border-t border-ink-line pt-3 mb-1 text-slate-faint text-sm">
@@ -221,6 +222,34 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
+
+      {connections.type && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-labelledby="connections-title" onMouseDown={closeConnections}>
+          <div className="max-h-[80vh] w-full max-w-md overflow-hidden rounded-t-2xl border border-ink-line bg-ink shadow-2xl sm:rounded-2xl" onMouseDown={(event) => event.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-ink-line px-4 py-3">
+              <h2 id="connections-title" className="font-display text-lg capitalize">{connections.type}</h2>
+              <button type="button" onClick={closeConnections} className="rounded-full p-2 text-slate-faint hover:bg-ink-soft hover:text-paper" aria-label="Close"><X size={18} /></button>
+            </div>
+            <div className="max-h-[calc(80vh-57px)] overflow-y-auto p-2">
+              {connections.loading ? (
+                <p className="py-8 text-center text-sm text-slate-faint">Loading {connections.type}...</p>
+              ) : connections.users.length === 0 ? (
+                <p className="py-8 text-center text-sm text-slate-faint">No {connections.type} yet.</p>
+              ) : (
+                connections.users.map((user) => (
+                  <Link key={user._id} to={`/profile/${user.username}`} onClick={closeConnections} className="flex items-center gap-3 rounded-xl p-3 hover:bg-ink-soft">
+                    <Avatar src={user.profilePicture?.url} alt={user.username} size="md" />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">{user.displayName || user.username}</p>
+                      <p className="truncate text-sm text-slate-faint">@{user.username}</p>
+                    </div>
+                  </Link>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
