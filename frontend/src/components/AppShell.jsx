@@ -12,6 +12,7 @@ import {
   Menu,
   PlusSquare,
   Radar,
+  Settings,
   X,
 } from 'lucide-react';
 import Avatar from './Avatar';
@@ -28,6 +29,7 @@ const NAV_ITEMS = [
   { to: '/messages', icon: MessageCircle, label: 'Messages' },
   { to: '/notifications', icon: Bell, label: 'Notifications' },
   { to: '/saved', icon: Bookmark, label: 'Saved' },
+  { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 
 function NavItem({ to, icon: Icon, label, end, soon, badge = 0 }) {

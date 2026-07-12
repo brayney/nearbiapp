@@ -198,7 +198,7 @@ export default function ProfilePage() {
             )}
           </div>
 
-          <div className="mt-6 flex items-center justify-between gap-8 text-sm font-semibold text-paper">
+          <div className="mt-6 flex flex-wrap items-center justify-start gap-6 text-sm font-semibold text-paper">
             <button type="button" onClick={() => openConnections('posts')} className="text-left text-lg font-semibold text-paper">
               {profile.postsCount ?? 0}
               <span className="block text-xs font-normal text-slate-faint">Posts</span>
@@ -218,7 +218,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('posts')}
-                className={`rounded-full px-4 py-2 transition ${activeTab === 'posts' ? 'bg-ink-soft text-paper' : 'hover:bg-ink-soft'}`}
+                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 transition ${activeTab === 'posts' ? 'bg-ink-soft text-paper' : 'hover:bg-ink-soft'}`}
               >
                 <Grid3x3 size={14} />
                 Posts
@@ -228,7 +228,7 @@ export default function ProfilePage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab('saved')}
-                    className={`rounded-full px-4 py-2 transition ${activeTab === 'saved' ? 'bg-ink-soft text-paper' : 'hover:bg-ink-soft'}`}
+                    className={`inline-flex items-center gap-2 rounded-full px-4 py-2 transition ${activeTab === 'saved' ? 'bg-ink-soft text-paper' : 'hover:bg-ink-soft'}`}
                   >
                     <Bookmark size={14} />
                     Saved
@@ -236,7 +236,7 @@ export default function ProfilePage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab('reposts')}
-                    className={`rounded-full px-4 py-2 transition ${activeTab === 'reposts' ? 'bg-ink-soft text-paper' : 'hover:bg-ink-soft'}`}
+                    className={`inline-flex items-center gap-2 rounded-full px-4 py-2 transition ${activeTab === 'reposts' ? 'bg-ink-soft text-paper' : 'hover:bg-ink-soft'}`}
                   >
                     <Repeat size={14} />
                     Reposts
