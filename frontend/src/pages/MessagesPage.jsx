@@ -196,14 +196,12 @@ export default function MessagesPage() {
             <h1 className="font-display text-xl">Messages</h1>
           </header>
           <div className="border-b border-ink-line px-3 py-3">
-            <div className="flex gap-3 overflow-x-auto px-1 pb-1 pt-8">
+            <div className="flex gap-3 overflow-x-auto px-1 pb-1">
               <button type="button" onClick={() => setNoteEditorOpen((open) => !open)} className="relative w-20 shrink-0 overflow-visible text-center">
-                <div className="relative mx-auto mb-1 h-[56px] w-[56px] overflow-visible">
-                  {ownNote && (
-                    <div className="absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-full w-max max-w-[9rem] rounded-full bg-paper px-3 py-1.5 text-[10px] font-semibold text-ink shadow-lg">
-                      {ownNote}
-                    </div>
-                  )}
+                <div className="mb-1 flex h-7 items-end justify-center">
+                  {ownNote && <span className="max-w-[9rem] truncate rounded-full bg-paper px-3 py-1.5 text-[10px] font-semibold text-ink shadow-lg">{ownNote}</span>}
+                </div>
+                <div className="relative mx-auto h-[56px] w-[56px]">
                   <Avatar src={currentUser?.profilePicture?.url} alt={currentUser?.username} size="md" />
                   <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-ink bg-coral text-ink">
                     <Plus size={13} />
@@ -213,12 +211,10 @@ export default function MessagesPage() {
               </button>
               {following.map((user) => (
                 <button key={user.id} type="button" onClick={() => setActiveUserId(user.id)} className="relative w-20 shrink-0 overflow-visible text-center">
-                  <div className="relative mx-auto mb-1 h-[56px] w-[56px] overflow-visible">
-                    {user.note && (
-                      <div className="absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-full w-max max-w-[9rem] rounded-full bg-paper px-3 py-1.5 text-[10px] font-semibold text-ink shadow-lg">
-                        {user.note}
-                      </div>
-                    )}
+                  <div className="mb-1 flex h-7 items-end justify-center">
+                    {user.note && <span className="max-w-[9rem] truncate rounded-full bg-paper px-3 py-1.5 text-[10px] font-semibold text-ink shadow-lg">{user.note}</span>}
+                  </div>
+                  <div className="relative mx-auto h-[56px] w-[56px]">
                     <Avatar src={user.profilePicture?.url} alt={user.username} size="md" online={user.isOnline} />
                   </div>
                   <span className="block truncate text-[11px] text-slate-faint">{user.username}</span>
