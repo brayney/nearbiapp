@@ -29,46 +29,55 @@ export default function RegisterPage() {
   return (
     <AuthLayout title="Join nearbi" subtitle="Connect with the people actually around you">
       <form onSubmit={handleSubmit}>
-        <FormInput label="Display name" value={form.displayName} onChange={update('displayName')} />
-        <FormInput
-          label="Username"
-          value={form.username}
-          onChange={update('username')}
-          autoComplete="username"
-          required
-        />
-        <FormInput
-          label="Email"
-          type="email"
-          value={form.email}
-          onChange={update('email')}
-          autoComplete="email"
-          required
-        />
-        <FormInput
-          label="Password"
-          type="password"
-          value={form.password}
-          onChange={update('password')}
-          autoComplete="new-password"
-          required
-        />
-        <p className="text-xs text-slate-mute -mt-2 mb-4">At least 8 characters, including a number.</p>
-        <FormInput label="Birth date" type="date" value={form.birthday} onChange={update('birthday')} required />
-        <FormInput label="Age" value={age} readOnly placeholder="Calculated from your birth date" />
-        <div className="mb-4">
-          <label className="mb-1.5 block text-sm font-medium text-slate-faint">Gender</label>
-          <select value={form.gender} onChange={update('gender')} required className="w-full rounded-xl border border-ink-line bg-ink-soft px-4 py-2.5 text-[15px] outline-none focus:border-teal-bright">
-            <option value="" disabled>Select gender</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="other">Other</option>
-            <option value="prefer_not_to_say">Prefer not to say</option>
-          </select>
+        <div className="space-y-6">
+          <section className="rounded-3xl border border-ink-line bg-ink-soft p-6">
+            <h2 className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-faint mb-5">Account details</h2>
+            <FormInput label="Display name" value={form.displayName} onChange={update('displayName')} />
+            <FormInput
+              label="Username"
+              value={form.username}
+              onChange={update('username')}
+              autoComplete="username"
+              required
+            />
+            <FormInput
+              label="Email"
+              type="email"
+              value={form.email}
+              onChange={update('email')}
+              autoComplete="email"
+              required
+            />
+            <FormInput
+              label="Password"
+              type="password"
+              value={form.password}
+              onChange={update('password')}
+              autoComplete="new-password"
+              required
+            />
+            <p className="text-xs text-slate-mute -mt-2 mb-4">At least 8 characters, including a number.</p>
+          </section>
+
+          <section className="rounded-3xl border border-ink-line bg-ink-soft p-6">
+            <h2 className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-faint mb-5">Recovery information</h2>
+            <FormInput label="Birth date" type="date" value={form.birthday} onChange={update('birthday')} required />
+            <FormInput label="Age" value={age} readOnly placeholder="Calculated from your birth date" />
+            <div className="mb-4">
+              <label className="mb-1.5 block text-sm font-medium text-slate-faint">Gender</label>
+              <select value={form.gender} onChange={update('gender')} required className="w-full rounded-xl border border-ink-line bg-ink-soft px-4 py-2.5 text-[15px] outline-none focus:border-teal-bright">
+                <option value="" disabled>Select gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+                <option value="prefer_not_to_say">Prefer not to say</option>
+              </select>
+            </div>
+            <FormInput label="Nationality" value={form.nationality} onChange={update('nationality')} required />
+            <FormInput label="Favorite pet" value={form.favoritePet} onChange={update('favoritePet')} autoComplete="off" required />
+            <p className="text-xs text-slate-faint -mt-2 mb-4">These recovery details help reset your password. Email verification is optional.</p>
+          </section>
         </div>
-        <FormInput label="Nationality" value={form.nationality} onChange={update('nationality')} required />
-        <FormInput label="Favorite pet" value={form.favoritePet} onChange={update('favoritePet')} autoComplete="off" required />
-        <p className="text-xs text-slate-faint -mt-2 mb-4">These recovery details help reset your password. Email verification is optional.</p>
 
         {error && <p className="text-coral text-sm mb-4 text-center">{error}</p>}
 

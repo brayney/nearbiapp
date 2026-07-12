@@ -50,11 +50,7 @@ router.post(
   '/forgot-password',
   authLimiter,
   [
-    body('identifier').trim().notEmpty().withMessage('Email or username is required'),
     body('birthday').isISO8601({ strict: true }).withMessage('Valid birth date required'),
-    body('age').isInt({ min: 1, max: 120 }).withMessage('Valid age required').toInt(),
-    body('gender').isIn(['male', 'female', 'other', 'prefer_not_to_say']).withMessage('Valid gender required'),
-    body('nationality').trim().isLength({ min: 2, max: 60 }).withMessage('Nationality is required'),
     body('favoritePet').trim().isLength({ min: 2, max: 80 }).withMessage('Favorite pet is required'),
   ],
   validate,

@@ -177,18 +177,12 @@ exports.refresh = catchAsync(async (req, res, next) => {
 
 // ---------------- FORGOT PASSWORD ----------------
 exports.forgotPassword = catchAsync(async (req, res, next) => {
-  const { identifier, birthday, age, gender, nationality, favoritePet } = req.body;
-  const normalizedIdentifier = identifier.toLowerCase();
-  const user = await User.findOne({
-    $or: [{ email: normalizedIdentifier }, { username: normalizedIdentifier }],
-  }).select('+recoveryPetHash');
+  const { birthday, favoritePet } = req.body;
+  const user = await User.findOne({ birthday: new Date(birthday) }).select('+recoveryPetHash');
 
   const recoveryMatches = user
     && user.recoveryPetHash
     && sameBirthday(user.birthday, birthday)
-    && ageFromBirthday(user.birthday) === age
-    && user.gender === gender
-    && normalizeRecoveryAnswer(user.nationality) === normalizeRecoveryAnswer(nationality)
     && await bcrypt.compare(normalizeRecoveryAnswer(favoritePet), user.recoveryPetHash);
 
   if (!recoveryMatches) {
