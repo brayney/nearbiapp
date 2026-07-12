@@ -183,13 +183,13 @@ export default function MessagesPage() {
   return (
     <div className="fixed inset-x-0 top-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] overflow-hidden bg-ink text-paper md:static md:h-screen md:p-5">
       <div className="mx-auto flex h-full max-w-6xl overflow-hidden bg-ink-soft md:min-h-[calc(100vh-40px)] md:rounded-2xl md:border md:border-ink-line">
-        <aside className={`h-full w-full shrink-0 flex-col overflow-hidden border-r border-ink-line sm:w-[350px] ${activeUserId && isMobile ? 'hidden' : 'flex'}`}>
+        <aside className={`h-full w-full shrink-0 flex-col overflow-visible border-r border-ink-line sm:w-[350px] ${activeUserId && isMobile ? 'hidden' : 'flex'}`}>
           <header className="flex h-[60px] items-center justify-center border-b border-ink-line px-5">
             <h1 className="font-display text-xl">Messages</h1>
           </header>
           <div className="border-b border-ink-line px-3 py-3">
-            <div className="flex gap-3 overflow-x-auto pb-1">
-              <button type="button" onClick={() => setNoteEditorOpen((open) => !open)} className="w-16 shrink-0 text-center">
+            <div className="flex gap-3 overflow-x-auto overflow-visible pb-1">
+              <button type="button" onClick={() => setNoteEditorOpen((open) => !open)} className="w-16 shrink-0 overflow-visible text-center">
                 <div className="relative mx-auto w-fit"><Avatar src={currentUser?.profilePicture?.url} alt={currentUser?.username} size="md" /><span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-ink bg-coral text-ink"><Plus size={13} /></span></div>
                 <span className="mt-1 block truncate text-[11px] text-slate-faint">{ownNote || 'Your note'}</span>
               </button>

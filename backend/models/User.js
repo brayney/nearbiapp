@@ -188,6 +188,7 @@ userSchema.methods.toPublicProfile = function () {
     locationLabel: this.locationLabel,
     interests: this.interests,
     createdAt: this.createdAt,
+    note: this.note?.expiresAt && this.note.expiresAt > new Date() ? this.note.text : '',
   };
 };
 

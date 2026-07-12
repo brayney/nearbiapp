@@ -158,13 +158,20 @@ export default function ProfilePage() {
 
       <div className="px-4 md:px-0">
         <div className="flex items-end justify-between -mt-10 mb-4">
-          <Avatar
-            src={profile.profilePicture?.url}
-            alt={profile.username}
-            size="xl"
-            online={profile.isOnline}
-            className="border-4 border-ink rounded-full"
-          />
+          <div className="relative">
+            {profile.note && (
+              <div className="absolute -top-4 left-1/2 z-20 -translate-x-1/2 rounded-full bg-paper px-4 py-2 text-xs font-medium text-ink shadow-lg">
+                {profile.note}
+              </div>
+            )}
+            <Avatar
+              src={profile.profilePicture?.url}
+              alt={profile.username}
+              size="xl"
+              online={profile.isOnline}
+              className="border-4 border-ink rounded-full"
+            />
+          </div>
           {isOwner ? null : (
             <div className="flex items-center gap-2">
               <button
@@ -216,9 +223,7 @@ export default function ProfilePage() {
         {profile.bio && <p className="text-[15px] mb-3 max-w-md">{profile.bio}</p>}
 
         <div className="flex gap-5 text-sm mb-6 font-mono">
-          <span>
-            <strong className="font-sans">{profile.postsCount}</strong> <span className="text-slate-faint">posts</span>
-          </span>
+          <span className="text-slate-faint">posts</span>
           <button type="button" onClick={() => openConnections('followers')} className="text-left hover:text-paper transition-colors" aria-label={`View ${profile.username}'s followers`}>
             <span className="text-slate-faint">followers</span>
           </button>
