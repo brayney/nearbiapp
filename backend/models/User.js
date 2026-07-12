@@ -67,6 +67,8 @@ const userSchema = new mongoose.Schema(
     bio: { type: String, maxlength: 250, default: '' },
     gender: { type: String, enum: ['male', 'female', 'other', 'prefer_not_to_say'], default: 'prefer_not_to_say' },
     birthday: { type: Date },
+    nationality: { type: String, trim: true, maxlength: 60, default: '' },
+    recoveryPetHash: { type: String, select: false },
     location: locationSchema,
     locationLabel: { type: String, default: '' }, // human-readable, e.g. "Ormoc City, PH"
     interests: [{ type: String, trim: true }],

@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
@@ -10,10 +11,28 @@ const {
   clearAuthCookies,
   msFromExpiryString,
 } = require('../utils/tokens');
-const { sendVerificationEmail, sendPasswordResetEmail } = require('../utils/email');
+const { sendVerificationEmail } = require('../utils/email');
 
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCK_TIME = 15 * 60 * 1000; // 15 minutes
+
+function normalizeRecoveryAnswer(value) {
+  return String(value || '').trim().toLocaleLowerCase();
+}
+
+function ageFromBirthday(birthday) {
+  const today = new Date();
+  const date = new Date(birthday);
+  let age = today.getUTCFullYear() - date.getUTCFullYear();
+  const hasHadBirthday = today.getUTCMonth() > date.getUTCMonth()
+    || (today.getUTCMonth() === date.getUTCMonth() && today.getUTCDate() >= date.getUTCDate());
+  if (!hasHadBirthday) age -= 1;
+  return age;
+}
+
+function sameBirthday(left, right) {
+  return new Date(left).toISOString().slice(0, 10) === new Date(right).toISOString().slice(0, 10);
+}
 
 async function issueSession(user, req, res, statusCode) {
   const accessToken = generateAccessToken(user._id, user.role);
@@ -44,30 +63,26 @@ async function issueSession(user, req, res, statusCode) {
 
 // ---------------- REGISTER ----------------
 exports.register = catchAsync(async (req, res, next) => {
-  const { username, email, password, displayName } = req.body;
+  const { username, email, password, displayName, birthday, gender, nationality, favoritePet } = req.body;
 
   const existing = await User.findOne({ $or: [{ email: email.toLowerCase() }, { username: username.toLowerCase() }] });
   if (existing) {
     return next(new ApiError(409, 'Email or username is already registered.'));
   }
 
+  const age = ageFromBirthday(birthday);
+  if (age < 1 || age > 120) return next(new ApiError(400, 'Enter a valid birth date.'));
+
   const user = await User.create({
     username: username.toLowerCase(),
     email: email.toLowerCase(),
     password,
     displayName: displayName || username,
+    birthday: new Date(birthday),
+    gender,
+    nationality: nationality.trim(),
+    recoveryPetHash: await bcrypt.hash(normalizeRecoveryAnswer(favoritePet), 12),
   });
-
-  const verifyToken = user.createEmailVerificationToken();
-  await user.save({ validateBeforeSave: false });
-
-  try {
-    await sendVerificationEmail(user.email, verifyToken);
-  } catch (err) {
-    console.error('Failed to send verification email:', err.message);
-    await user.deleteOne();
-    return next(new ApiError(503, 'We could not send a verification email. Please try again later.'));
-  }
 
   await issueSession(user, req, res, 201);
 });
@@ -157,40 +172,31 @@ exports.refresh = catchAsync(async (req, res, next) => {
 
 // ---------------- FORGOT PASSWORD ----------------
 exports.forgotPassword = catchAsync(async (req, res, next) => {
-  const { email } = req.body;
-  const user = await User.findOne({ email: email.toLowerCase() });
+  const { identifier, birthday, age, gender, nationality, favoritePet } = req.body;
+  const normalizedIdentifier = identifier.toLowerCase();
+  const user = await User.findOne({
+    $or: [{ email: normalizedIdentifier }, { username: normalizedIdentifier }],
+  }).select('+recoveryPetHash');
 
-  // Always respond success to avoid leaking which emails are registered.
-  if (!user) {
-    return res.status(200).json({
-      success: true,
-      message: 'If that email is registered, a reset link has been sent.',
-    });
-  }
+  const recoveryMatches = user
+    && user.recoveryPetHash
+    && sameBirthday(user.birthday, birthday)
+    && ageFromBirthday(user.birthday) === age
+    && user.gender === gender
+    && normalizeRecoveryAnswer(user.nationality) === normalizeRecoveryAnswer(nationality)
+    && await bcrypt.compare(normalizeRecoveryAnswer(favoritePet), user.recoveryPetHash);
 
-  // Reset links are only sent after the mailbox owner completed verification.
-  if (!user.isEmailVerified) {
-    return res.status(200).json({
-      success: true,
-      message: 'If that email is registered and verified, a reset link has been sent.',
-    });
+  if (!recoveryMatches) {
+    return next(new ApiError(400, 'We could not verify those account recovery details.'));
   }
 
   const resetToken = user.createPasswordResetToken();
   await user.save({ validateBeforeSave: false });
 
-  try {
-    await sendPasswordResetEmail(user.email, resetToken);
-  } catch (err) {
-    user.passwordResetToken = undefined;
-    user.passwordResetExpires = undefined;
-    await user.save({ validateBeforeSave: false });
-    return next(new ApiError(500, 'Failed to send reset email. Please try again later.'));
-  }
-
   res.status(200).json({
     success: true,
-    message: 'If that email is registered and verified, a reset link has been sent.',
+    resetToken,
+    message: 'Account recovery details confirmed.',
   });
 });
 
@@ -252,17 +258,22 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
 });
 
 exports.resendVerification = catchAsync(async (req, res, next) => {
-  const user = req.user;
+  const user = await User.findById(req.user._id).select('+emailVerificationToken +emailVerificationExpires');
   if (user.isEmailVerified) {
     return res.status(200).json({ success: true, message: 'Email already verified.' });
   }
 
+  const previousToken = user.emailVerificationToken;
+  const previousExpiry = user.emailVerificationExpires;
   const verifyToken = user.createEmailVerificationToken();
   await user.save({ validateBeforeSave: false });
 
   try {
     await sendVerificationEmail(user.email, verifyToken);
   } catch (err) {
+    user.emailVerificationToken = previousToken;
+    user.emailVerificationExpires = previousExpiry;
+    await user.save({ validateBeforeSave: false });
     console.error('Failed to resend verification email:', err);
     return next(new ApiError(500, 'Could not send verification email. Please try again later.'));
   }

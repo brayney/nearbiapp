@@ -116,8 +116,8 @@ function ProfileTab({ user, dispatch }) {
         <div>
           <p className="text-sm text-slate-faint">Signed in as</p>
           <p className="font-medium">{user?.email || 'Not available'}</p>
-          <p className={`text-sm ${user?.isEmailVerified ? 'text-teal-bright' : 'text-coral'}`}>
-            {user?.isEmailVerified ? 'Email verified' : 'Email not verified'}
+          <p className={`text-sm ${user?.isEmailVerified ? 'text-teal-bright' : 'text-slate-faint'}`}>
+            {user?.isEmailVerified ? 'Email verified' : 'Email not verified (optional)'}
           </p>
         </div>
       </div>
@@ -125,7 +125,7 @@ function ProfileTab({ user, dispatch }) {
       {!user?.isEmailVerified && (
         <div className="mb-6 rounded-xl border border-coral/50 bg-ink-soft p-4">
           <p className="text-sm font-medium">Your email is not verified yet.</p>
-          <p className="mt-1 text-sm text-slate-faint">Verify it before using password recovery. The email contains a verification link, not a code.</p>
+          <p className="mt-1 text-sm text-slate-faint">Email verification is optional. Password recovery uses the details you set when registering.</p>
           <button onClick={resendVerification} disabled={resendingVerification} className="mt-3 text-sm font-semibold text-coral disabled:opacity-50">
             {resendingVerification ? 'Sending…' : 'Resend verification email'}
           </button>
