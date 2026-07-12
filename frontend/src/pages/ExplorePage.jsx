@@ -88,6 +88,12 @@ export default function ExplorePage() {
                   </div>
                 )}
 
+                {post.media?.length > 1 && (
+                  <div className="absolute right-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[11px] font-semibold text-paper">
+                    {post.media.length}
+                  </div>
+                )}
+
                 <div className="absolute inset-0 bg-black/35 opacity-0 transition-opacity duration-200 group-hover:opacity-100 pointer-events-none" />
                 <div className="absolute inset-x-0 top-0 p-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-20">
                   <div className="flex items-center justify-between gap-2 rounded-2xl bg-ink/90 px-3 py-2 text-sm text-paper backdrop-blur">

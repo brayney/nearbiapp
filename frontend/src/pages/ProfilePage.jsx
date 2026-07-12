@@ -160,6 +160,11 @@ export default function ProfilePage() {
                     {post.caption?.slice(0, 60)}
                   </div>
                 )}
+                {post.media?.length > 1 && (
+                  <div className="absolute right-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[11px] font-semibold text-paper">
+                    {post.media.length}
+                  </div>
+                )}
               </Link>
             ))}
           </div>
