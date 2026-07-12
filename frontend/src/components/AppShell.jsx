@@ -111,7 +111,7 @@ export default function AppShell() {
       {/* Desktop / tablet sidebar */}
       <aside className="hidden h-[100dvh] shrink-0 overflow-y-auto border-r border-ink-line px-2 py-6 md:flex md:flex-col md:w-[76px] lg:w-64 lg:px-4">
         <div className="px-2 mb-8">
-          <Logo className="text-sm" compact={false} />
+          <Logo size={40} />
         </div>
 
         <nav className="flex flex-col gap-1 flex-1">
