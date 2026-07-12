@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { Grid3x3, MoreVertical, Repeat, X, Bookmark } from 'lucide-react';
+import { Grid3x3, Settings, Repeat, X, Bookmark } from 'lucide-react';
 import Avatar from '../components/Avatar';
 import { usersApi, postsApi } from '../api/resources';
 import { pushToast } from '../features/ui/uiSlice';
@@ -157,10 +157,10 @@ export default function ProfilePage() {
       </div>
 
       <div className="px-4 md:px-0">
-        <div className="flex items-end justify-between -mt-10 mb-4">
-          <div className="relative">
+        <div className="flex items-end justify-between -mt-10 mb-4 overflow-visible">
+          <div className="relative overflow-visible">
             {profile.note && (
-              <div className="absolute -top-4 left-1/2 z-20 -translate-x-1/2 rounded-full bg-paper px-4 py-2 text-xs font-medium text-ink shadow-lg">
+              <div className="absolute -top-5 left-1/2 z-20 w-max -translate-x-1/2 rounded-full bg-paper/95 px-4 py-2 text-xs font-semibold text-ink shadow-2xl">
                 {profile.note}
               </div>
             )}
@@ -206,7 +206,7 @@ export default function ProfilePage() {
                 aria-label="Open profile actions"
                 aria-expanded={showProfileMenu}
               >
-                <MoreVertical size={20} />
+                <Settings size={20} />
               </button>
               {showProfileMenu && (
                 <div className="absolute right-0 z-10 mt-2 w-48 overflow-hidden rounded-2xl border border-ink-line bg-ink py-2 shadow-xl">

@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Avatar from '../components/Avatar';
 import { messagesApi, usersApi } from '../api/resources';
 import { pushToast } from '../features/ui/uiSlice';
+import { fetchMe } from '../features/auth/authSlice';
 
 function formatTime(value) {
   return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(new Date(value));
@@ -48,6 +49,7 @@ export default function MessagesPage() {
       setOwnNote(noteText.trim());
       setNoteText('');
       setNoteEditorOpen(false);
+      await dispatch(fetchMe());
       dispatch(pushToast('Your note will disappear after 24 hours.', 'success'));
     } catch (err) {
       dispatch(pushToast(err.response?.data?.message || 'Could not save note.', 'error'));
@@ -62,6 +64,12 @@ export default function MessagesPage() {
     loadConversations().catch(() => dispatch(pushToast('Could not load messages.', 'error'))).finally(() => setLoading(false));
     return () => window.removeEventListener('resize', resizeListener);
   }, []);
+
+  useEffect(() => {
+    if (currentUser?.note) {
+      setOwnNote(currentUser.note);
+    }
+  }, [currentUser]);
 
   useEffect(() => {
     if (!activeUserId) return;
