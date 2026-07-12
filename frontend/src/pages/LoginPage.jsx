@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import AuthLayout from './AuthLayout';
@@ -14,6 +15,7 @@ export default function LoginPage() {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,11 +38,21 @@ export default function LoginPage() {
         />
         <FormInput
           label="Password"
-          type="password"
+          type={showPassword ? 'text' : 'password'}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="current-password"
           required
+          trailing={
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="text-slate-faint hover:text-slate-900 focus:outline-none"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          }
         />
 
         <div className="flex items-center justify-between mb-6 text-sm">
