@@ -71,7 +71,7 @@ export default function StoriesBar() {
           </button>
           {groups.map((group) => (
             <button key={group.author?._id || group.author?.id} type="button" onClick={() => openStory(group.stories[0])} className="w-16 shrink-0 rounded-full bg-transparent p-0 text-center text-slate-faint focus:outline-none focus:ring-0">
-              <div className="mx-auto w-fit rounded-full bg-gradient-to-tr from-coral via-teal to-coral p-0.5"><Avatar src={group.author?.profilePicture?.url} alt={group.author?.username} size="lg" className="border-2 border-ink" /></div>
+              <div className="mx-auto w-fit rounded-full bg-transparent p-0.5"><Avatar src={group.author?.profilePicture?.url} alt={group.author?.username} size="lg" className="border-2 border-ink" /></div>
               <span className="mt-1 block truncate text-xs">{group.author?.username}</span>
             </button>
           ))}
