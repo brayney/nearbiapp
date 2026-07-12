@@ -36,7 +36,7 @@ export default function App() {
   useEffect(() => {
     const onLogout = () => {
       dispatch(forceLogout());
-      navigate('/login');
+      navigate('/');
     };
     window.addEventListener('auth:logout', onLogout);
     return () => window.removeEventListener('auth:logout', onLogout);

@@ -26,11 +26,15 @@ function createApp() {
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);
+  // Vercel creates a unique hostname for each preview deployment.  Permit
+  // this application's Vercel domains in addition to the configured URL so
+  // preview and production clients can both call the Render API.
+  const isNearbiVercelOrigin = (origin) => /^https:\/\/nearbi(?:-[a-z0-9-]+)?\.vercel\.app$/i.test(origin);
 
   app.use(
     cors({
       origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (!origin || allowedOrigins.includes(origin) || isNearbiVercelOrigin(origin)) {
           callback(null, true);
         } else {
           callback(new Error('CORS origin denied'));

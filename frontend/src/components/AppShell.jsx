@@ -59,7 +59,7 @@ export default function AppShell() {
 
   const handleLogout = async () => {
     await dispatch(logoutUser());
-    navigate('/login');
+    navigate('/');
   };
 
   const loadBadges = async () => {

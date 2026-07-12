@@ -72,7 +72,7 @@ export default function ProfilePage() {
   const handleLogout = async () => {
     setShowProfileMenu(false);
     await dispatch(logoutUser());
-    navigate('/login');
+    navigate('/');
   };
 
   const loadSavedPosts = async () => {

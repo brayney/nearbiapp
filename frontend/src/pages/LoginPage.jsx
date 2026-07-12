@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import AuthLayout from './AuthLayout';
@@ -28,6 +28,10 @@ export default function LoginPage() {
 
   return (
     <AuthLayout title="Welcome back" subtitle="Log in to see what's happening close by">
+      <Link to="/" className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-slate-faint transition-colors hover:text-paper">
+        <ArrowLeft size={16} />
+        Back to home
+      </Link>
       <form onSubmit={handleSubmit}>
         <FormInput
           label="Email or username"
@@ -47,7 +51,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
-              className="text-slate-faint hover:text-slate-900 focus:outline-none"
+              className="text-slate-faint transition-colors hover:text-paper focus:outline-none focus-visible:text-paper"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
