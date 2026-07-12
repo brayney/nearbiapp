@@ -21,9 +21,20 @@ function createApp() {
 
   applyHelmet(app);
 
+  const allowedOrigins = (process.env.CLIENT_URL || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
   app.use(
     cors({
-      origin: process.env.CLIENT_URL,
+      origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error('CORS origin denied'));
+        }
+      },
       credentials: true,
     })
   );
