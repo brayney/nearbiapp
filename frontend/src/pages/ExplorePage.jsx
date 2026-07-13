@@ -53,39 +53,29 @@ export default function ExplorePage() {
                   </div>
                 )}
 
-                <div className="pointer-events-none absolute inset-0 bg-black/35 opacity-100 transition-opacity duration-200 sm:opacity-0 sm:group-hover:opacity-100" />
-                <div className="absolute inset-x-0 top-0 z-20 p-2 opacity-100 transition-opacity duration-200 sm:p-3 sm:opacity-0 sm:group-hover:opacity-100">
-                  <div className="rounded-2xl bg-ink/90 px-3 py-2 text-sm text-paper backdrop-blur">
-                    <span className="truncate font-semibold">{post.author?.username || 'Unknown'}</span>
-                  </div>
-                </div>
-                <div className="absolute inset-x-0 bottom-0 z-20 p-2 opacity-100 transition-opacity duration-200 sm:p-3 sm:opacity-0 sm:group-hover:opacity-100">
-                  <div className="flex items-center justify-center rounded-2xl bg-ink/90 px-3 py-2 text-slate-faint backdrop-blur">
-                    <button
-                      type="button"
-                      onClick={async (event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        const result = await dispatch(toggleLike(post._id));
-                        if (toggleLike.fulfilled.match(result)) {
-                          setPosts((current) =>
-                            current.map((item) =>
-                              item._id === post._id
-                                ? { ...item, likesCount: result.payload.likesCount, _liked: result.payload.liked }
-                                : item
-                            )
-                          );
-                        } else {
-                          dispatch(pushToast('Could not like post.', 'error'));
-                        }
-                      }}
-                      className="text-paper hover:text-coral"
-                      aria-label="React to post"
-                    >
-                      <Heart size={16} fill={post._liked ? 'currentColor' : 'none'} strokeWidth={post._liked ? 0 : 1.75} />
-                    </button>
-                  </div>
-                </div>
+                <button
+                  type="button"
+                  onClick={async (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const result = await dispatch(toggleLike(post._id));
+                    if (toggleLike.fulfilled.match(result)) {
+                      setPosts((current) =>
+                        current.map((item) =>
+                          item._id === post._id
+                            ? { ...item, likesCount: result.payload.likesCount, _liked: result.payload.liked }
+                            : item
+                        )
+                      );
+                    } else {
+                      dispatch(pushToast('Could not like post.', 'error'));
+                    }
+                  }}
+                  className="absolute bottom-2 left-2 z-20 rounded-full bg-black/45 p-2 text-paper transition hover:bg-black/70 hover:text-coral"
+                  aria-label="React to post"
+                >
+                  <Heart size={16} fill={post._liked ? 'currentColor' : 'none'} strokeWidth={post._liked ? 0 : 1.75} />
+                </button>
               </div>
             );
           })}

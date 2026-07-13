@@ -49,6 +49,7 @@ export default function MessagesPage() {
   const audioChunksRef = useRef([]);
   const audioContextRef = useRef(null);
   const animationFrameRef = useRef(null);
+  const sendVoiceWhenReadyRef = useRef(false);
 
   const loadConversations = async () => {
     const { data } = await messagesApi.getConversations();
@@ -116,15 +117,12 @@ export default function MessagesPage() {
     releaseVoiceResources();
   }, []);
 
-  const handleSend = async (event) => {
-    event.preventDefault();
-    const text = draft.trim();
-    if ((!text && !mediaFile) || !activeUserId) return;
-    setDraft('');
+  const sendMessage = async (text, file) => {
+    if ((!text && !file) || !activeUserId) return;
     try {
       const payload = new FormData();
       if (text) payload.append('text', text);
-      if (mediaFile) payload.append('media', mediaFile);
+      if (file) payload.append('media', file);
       const { data } = await messagesApi.sendMessage(activeUserId, payload);
       setMessages((items) => [...items, data.message]);
       setMediaFile(null);
@@ -133,6 +131,21 @@ export default function MessagesPage() {
       setDraft(text);
       dispatch(pushToast(err.response?.data?.message || 'Message could not be sent.', 'error'));
     }
+  };
+
+  const handleSend = (event) => {
+    event.preventDefault();
+    if (recordingVoice) {
+      // Send is the natural finish action on mobile: stop recording first,
+      // then upload as soon as MediaRecorder produces the final audio blob.
+      sendVoiceWhenReadyRef.current = true;
+      stopVoiceRecording();
+      return;
+    }
+    const text = draft.trim();
+    if ((!text && !mediaFile) || !activeUserId) return;
+    setDraft('');
+    sendMessage(text, mediaFile);
   };
 
   const startVoiceRecording = async () => {
@@ -173,7 +186,16 @@ export default function MessagesPage() {
         const type = recorder.mimeType || 'audio/webm';
         const extension = type.includes('mp4') ? 'm4a' : 'webm';
         const recording = new File([new Blob(audioChunksRef.current, { type })], `voice-message-${Date.now()}.${extension}`, { type });
-        if (recording.size > 0) setMediaFile(recording);
+        if (recording.size > 0) {
+          setMediaFile(recording);
+          if (sendVoiceWhenReadyRef.current) {
+            sendVoiceWhenReadyRef.current = false;
+            sendMessage('', recording);
+          }
+        } else if (sendVoiceWhenReadyRef.current) {
+          sendVoiceWhenReadyRef.current = false;
+          dispatch(pushToast('No audio was recorded. Please try again.', 'error'));
+        }
         recorderRef.current = null;
         setRecordingVoice(false);
         setVoiceLevels(Array(22).fill(0.14));
@@ -325,9 +347,9 @@ export default function MessagesPage() {
         </button>
         <button
           type="submit"
-          disabled={!draft.trim() && !mediaFile}
+          disabled={!recordingVoice && !draft.trim() && !mediaFile}
           className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-coral text-ink transition disabled:cursor-not-allowed disabled:bg-slate-mute disabled:text-slate-faint"
-          aria-label="Send message"
+          aria-label={recordingVoice ? 'Stop and send voice message' : 'Send message'}
         >
           <Send size={16} />
         </button>
@@ -403,18 +425,21 @@ export default function MessagesPage() {
                       onClick={() => setActiveUserId(conversation.id)}
                       className={`group flex w-full items-center gap-3 rounded-3xl px-4 py-3 text-left transition ${activeUserId === conversation.id ? 'bg-ink' : 'hover:bg-ink'}`}
                     >
-                      <Avatar
-                        src={conversation.participant?.profilePicture?.url}
-                        alt={conversation.participant?.username}
-                        size="md"
-                        online={conversation.participant?.isOnline}
-                      />
+                      <div className="flex w-[68px] shrink-0 flex-col items-center gap-1 text-center">
+                        <Avatar
+                          src={conversation.participant?.profilePicture?.url}
+                          alt={conversation.participant?.username}
+                          size="md"
+                          online={conversation.participant?.isOnline}
+                        />
+                        <span className="max-w-full truncate text-[9px] leading-3 text-slate-faint">{formatPresence(conversation.participant)}</span>
+                      </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
                           <p className="truncate text-sm font-medium text-paper">{conversation.nickname || conversation.participant?.displayName || conversation.participant?.username}</p>
                           {conversation.unread > 0 && <span className="inline-flex h-2.5 w-2.5 rounded-full bg-coral" />}
                         </div>
-                        <p className="mt-1 truncate text-xs text-slate-faint">{formatPresence(conversation.participant)}{conversation.preview ? ` · ${conversation.preview}` : ''}</p>
+                        <p className="mt-1 truncate text-xs text-slate-faint">{conversation.preview || 'Start a conversation'}</p>
                       </div>
                     </button>
                   ))}
@@ -430,8 +455,8 @@ export default function MessagesPage() {
       </div>
 
       {detailsOpen && participant && (
-        <div className="fixed inset-0 z-[70] flex justify-end bg-black/60" role="dialog" aria-modal="true" aria-label="Conversation details" onMouseDown={() => setDetailsOpen(false)}>
-          <aside className="flex h-full w-full max-w-md flex-col overflow-y-auto border-l border-ink-line bg-ink p-5 shadow-2xl" onMouseDown={(event) => event.stopPropagation()}>
+        <div className="fixed inset-x-0 top-0 bottom-[var(--mobile-nav-height)] z-[70] flex justify-end bg-black/60 md:bottom-0" role="dialog" aria-modal="true" aria-label="Conversation details" onMouseDown={() => setDetailsOpen(false)}>
+          <aside className="flex h-full w-full max-w-md flex-col overflow-y-auto border-l border-ink-line bg-ink p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-2xl md:pb-5" onMouseDown={(event) => event.stopPropagation()}>
             <div className="flex items-center justify-between"><h2 className="font-display text-xl">Conversation details</h2><button type="button" onClick={() => setDetailsOpen(false)} className="rounded-full p-2 text-slate-faint hover:bg-ink-soft" aria-label="Close"><X size={20} /></button></div>
             <div className="mt-6 flex flex-col items-center text-center"><Avatar src={participant.profilePicture?.url} alt={participant.username} size="xl" online={participant.isOnline} /><p className="mt-3 font-semibold">{connection.nickname || activeName}</p><p className="text-sm text-slate-faint">@{participant.username}</p><p className="mt-1 text-xs text-slate-faint">{formatPresence(participant)}</p></div>
             <form className="mt-7" onSubmit={(event) => { event.preventDefault(); updateConnection({ nickname }, 'Nickname saved.'); }}>

@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchFeed } from '../features/posts/postsSlice';
 import PostCard from '../components/PostCard';
 import StoriesBar from '../components/StoriesBar';
+import Logo from '../components/Logo';
 
 export default function FeedPage() {
   const dispatch = useDispatch();
@@ -30,10 +31,12 @@ export default function FeedPage() {
 
   return (
     <div className="max-w-xl mx-auto px-0 md:px-4">
-      <header className="sticky top-0 bg-ink/90 backdrop-blur border-b border-ink-line px-4 md:px-0 py-4 z-10">
-        <h1 className="font-display text-xl">Home</h1>
-      </header>
-      <StoriesBar />
+      <div className="sticky top-0 z-20 border-b border-ink-line bg-ink/95 backdrop-blur">
+        <header className="flex h-[60px] items-center px-4 md:px-0">
+          <Logo size={112} />
+        </header>
+        <StoriesBar />
+      </div>
 
       {status === 'idle' || (status === 'loading' && items.length === 0) ? (
         <FeedSkeleton />
