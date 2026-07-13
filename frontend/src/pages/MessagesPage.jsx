@@ -41,10 +41,13 @@ export default function MessagesPage() {
   const [savingConnection, setSavingConnection] = useState(false);
   const [expandedMessageId, setExpandedMessageId] = useState(null);
   const [recordingVoice, setRecordingVoice] = useState(false);
+  const [voiceLevels, setVoiceLevels] = useState(Array(22).fill(0.14));
   const bottomRef = useRef(null);
   const recorderRef = useRef(null);
   const recordingStreamRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const audioContextRef = useRef(null);
+  const animationFrameRef = useRef(null);
 
   const loadConversations = async () => {
     const { data } = await messagesApi.getConversations();
@@ -96,9 +99,20 @@ export default function MessagesPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  const releaseVoiceResources = (stopTracks = true) => {
+    if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+    animationFrameRef.current = null;
+    audioContextRef.current?.close().catch(() => {});
+    audioContextRef.current = null;
+    if (stopTracks) {
+      recordingStreamRef.current?.getTracks().forEach((track) => track.stop());
+      recordingStreamRef.current = null;
+    }
+  };
+
   useEffect(() => () => {
-    recorderRef.current?.stop();
-    recordingStreamRef.current?.getTracks().forEach((track) => track.stop());
+    if (recorderRef.current?.state === 'recording') recorderRef.current.stop();
+    releaseVoiceResources();
   }, []);
 
   const handleSend = async (event) => {
@@ -126,9 +140,29 @@ export default function MessagesPage() {
       return;
     }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : '';
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, noiseSuppression: true, echoCancellation: true });
+      const mimeType = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'].find((type) => MediaRecorder.isTypeSupported(type)) || '';
       const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioContextClass) {
+        const audioContext = new AudioContextClass();
+        const analyser = audioContext.createAnalyser();
+        analyser.fftSize = 64;
+        audioContext.createMediaStreamSource(stream).connect(analyser);
+        audioContextRef.current = audioContext;
+        audioContext.resume?.().catch(() => {});
+        const frequencyData = new Uint8Array(analyser.frequencyBinCount);
+        const drawLevels = () => {
+          analyser.getByteFrequencyData(frequencyData);
+          const levels = Array.from({ length: 22 }, (_, index) => {
+            const sample = frequencyData[Math.floor((index / 22) * frequencyData.length)] || 0;
+            return Math.max(0.14, sample / 255);
+          });
+          setVoiceLevels(levels);
+          animationFrameRef.current = requestAnimationFrame(drawLevels);
+        };
+        drawLevels();
+      }
       audioChunksRef.current = [];
       recordingStreamRef.current = stream;
       recorder.ondataavailable = (event) => {
@@ -136,12 +170,13 @@ export default function MessagesPage() {
       };
       recorder.onstop = () => {
         const type = recorder.mimeType || 'audio/webm';
-        const recording = new File([new Blob(audioChunksRef.current, { type })], `voice-message-${Date.now()}.webm`, { type });
+        const extension = type.includes('mp4') ? 'm4a' : 'webm';
+        const recording = new File([new Blob(audioChunksRef.current, { type })], `voice-message-${Date.now()}.${extension}`, { type });
         if (recording.size > 0) setMediaFile(recording);
-        stream.getTracks().forEach((track) => track.stop());
-        recordingStreamRef.current = null;
         recorderRef.current = null;
         setRecordingVoice(false);
+        setVoiceLevels(Array(22).fill(0.14));
+        releaseVoiceResources();
       };
       recorder.start();
       recorderRef.current = recorder;
@@ -152,7 +187,12 @@ export default function MessagesPage() {
   };
 
   const stopVoiceRecording = () => {
-    if (recorderRef.current?.state === 'recording') recorderRef.current.stop();
+    const recorder = recorderRef.current;
+    if (recorder?.state === 'recording') recorder.stop();
+    else releaseVoiceResources();
+    setRecordingVoice(false);
+    setVoiceLevels(Array(22).fill(0.14));
+    releaseVoiceResources(false);
   };
 
   const updateConnection = async (payload, successMessage) => {
@@ -258,13 +298,22 @@ export default function MessagesPage() {
             onChange={(event) => setMediaFile(event.target.files?.[0] || null)}
           />
         </label>
-        <input
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          maxLength={2000}
-          className="min-w-0 flex-1 bg-transparent text-sm text-paper outline-none placeholder:text-slate-faint"
-          placeholder="Message..."
-        />
+        {recordingVoice ? (
+          <div className="flex min-w-0 flex-1 items-center gap-2" aria-label="Recording voice message">
+            <span className="shrink-0 text-xs font-semibold text-coral">Recording</span>
+            <div className="flex h-8 flex-1 items-center justify-center gap-0.5 overflow-hidden">
+              {voiceLevels.map((level, index) => <span key={index} className="w-1 rounded-full bg-coral transition-[height] duration-75" style={{ height: `${Math.round(5 + level * 24)}px` }} />)}
+            </div>
+          </div>
+        ) : (
+          <input
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            maxLength={2000}
+            className="min-w-0 flex-1 bg-transparent text-sm text-paper outline-none placeholder:text-slate-faint"
+            placeholder="Message..."
+          />
+        )}
         <button
           type="button"
           onClick={recordingVoice ? stopVoiceRecording : startVoiceRecording}

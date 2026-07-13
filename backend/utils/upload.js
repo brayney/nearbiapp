@@ -27,7 +27,7 @@ const storage = new CloudinaryStorage({
   params: {
     folder: 'social-app',
     resource_type: 'auto',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4', 'mov', 'webm', 'mp3', 'wav', 'ogg', 'pdf', 'txt', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'],
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4', 'mov', 'webm', 'mp3', 'wav', 'ogg', 'm4a', 'pdf', 'txt', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'],
   },
 });
 
@@ -43,6 +43,7 @@ const ALLOWED_MIME = [
   'audio/wav',
   'audio/ogg',
   'audio/webm',
+  'audio/mp4',
   'application/pdf',
   'text/plain',
   'application/msword',
