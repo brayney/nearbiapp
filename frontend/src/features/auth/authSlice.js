@@ -27,6 +27,18 @@ export const fetchMe = createAsyncThunk('auth/me', async (_, { rejectWithValue }
     const { data } = await authApi.me();
     return data.user;
   } catch (err) {
+    if (err.response?.status === 401) {
+      try {
+        const refresh = await authApi.refresh();
+        if (refresh.data?.accessToken) {
+          setAccessToken(refresh.data.accessToken);
+        }
+        const { data } = await authApi.me();
+        return data.user;
+      } catch (refreshError) {
+        return rejectWithValue(null);
+      }
+    }
     return rejectWithValue(null);
   }
 });

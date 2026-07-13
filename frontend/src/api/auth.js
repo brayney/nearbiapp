@@ -4,6 +4,7 @@ export const authApi = {
   register: (payload) => api.post('/auth/register', payload),
   login: (payload) => api.post('/auth/login', payload),
   logout: () => api.post('/auth/logout'),
+  refresh: () => api.post('/auth/refresh'),
   me: () => api.get('/auth/me'),
   lookupAccount: (payload) => api.post('/auth/lookup-account', payload),
   forgotPassword: (payload) => api.post('/auth/forgot-password', payload),

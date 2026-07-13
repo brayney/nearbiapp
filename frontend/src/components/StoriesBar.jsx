@@ -109,8 +109,8 @@ export default function StoriesBar() {
       </div>
 
       {creating && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-4" onMouseDown={() => !saving && closeComposer()}>
-          <form onSubmit={createStory} onMouseDown={(event) => event.stopPropagation()} className="w-full max-w-md max-h-[calc(100vh-2.5rem)] overflow-y-auto rounded-t-2xl border border-ink-line bg-ink p-5 sm:rounded-2xl">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 p-4 sm:p-6" onMouseDown={() => !saving && closeComposer()}>
+          <form onSubmit={createStory} onMouseDown={(event) => event.stopPropagation()} className="mx-auto flex w-full max-w-md max-h-[calc(100vh-3rem)] flex-col overflow-y-auto rounded-2xl border border-ink-line bg-ink p-5">
             <div className="mb-4 flex items-center justify-between"><h2 className="font-display text-xl">Add to your story</h2><button type="button" onClick={closeComposer} className="rounded-full p-2 text-slate-faint hover:bg-ink-soft"><X size={18} /></button></div>
             <textarea value={text} onChange={(event) => setText(event.target.value)} maxLength={280} rows={4} placeholder="Share something…" className="w-full resize-none rounded-xl border border-ink-line bg-ink-soft p-3 text-sm outline-none focus:border-teal-bright" />
             <label className="mt-3 flex cursor-pointer items-center gap-2 rounded-xl border border-ink-line px-3 py-2 text-sm text-slate-faint hover:bg-ink-soft"><Image size={18} />{media ? media.name : 'Add photo or video'}<input type="file" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime,video/webm" className="hidden" onChange={handleMediaChange} /></label>
@@ -121,8 +121,8 @@ export default function StoriesBar() {
       )}
 
       {active && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4" onMouseDown={() => setActive(null)}>
-          <article onMouseDown={(event) => event.stopPropagation()} className="relative flex h-[75vh] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-ink">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 p-4 sm:p-6" onMouseDown={() => setActive(null)}>
+          <article onMouseDown={(event) => event.stopPropagation()} className="relative mx-auto flex h-full max-h-[calc(100vh-3rem)] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-ink">
             <button type="button" onClick={() => setActive(null)} className="absolute right-3 top-3 z-10 rounded-full bg-black/50 p-2 text-paper"><X size={18} /></button>
             {active.media?.url ? active.media.type === 'video' ? <video src={active.media.url} controls autoPlay className="h-full w-full object-contain" /> : <img src={active.media.url} alt="Story" className="h-full w-full object-contain" /> : <div className="flex h-full items-center justify-center bg-gradient-to-br from-teal to-ink p-8 text-center font-display text-2xl">{active.text}</div>}
             {active.media?.url && active.text && <p className="absolute bottom-0 w-full bg-gradient-to-t from-black/80 p-5 text-sm">{active.text}</p>}
