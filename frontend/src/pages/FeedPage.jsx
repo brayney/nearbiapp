@@ -9,6 +9,7 @@ export default function FeedPage() {
   const dispatch = useDispatch();
   const { items, status, page, hasMore } = useSelector((s) => s.posts);
   const loaderRef = useRef(null);
+  const feedScrollRef = useRef(null);
 
   useEffect(() => {
     dispatch(fetchFeed({ page: 1 }));
@@ -23,43 +24,45 @@ export default function FeedPage() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => entries[0].isIntersecting && loadMore(),
-      { rootMargin: '200px' }
+      { root: feedScrollRef.current, rootMargin: '200px' }
     );
     if (loaderRef.current) observer.observe(loaderRef.current);
     return () => observer.disconnect();
   }, [loadMore]);
 
   return (
-    <div className="max-w-xl mx-auto px-0 md:px-4">
-      <div className="sticky top-0 z-20 border-b border-ink-line bg-ink/95 backdrop-blur">
-        <header className="flex h-[60px] items-center px-4 md:px-0">
-          <Logo size={112} />
+    <div className="mx-auto flex h-[calc(100dvh-var(--mobile-nav-height))] w-full max-w-xl flex-col overflow-hidden md:h-screen md:px-4">
+      <div className="z-20 shrink-0 border-b border-ink-line bg-ink/95 backdrop-blur">
+        <header className="flex h-[76px] items-center justify-center px-4 md:px-0">
+          <Logo size={156} className="max-h-[58px]" />
         </header>
         <StoriesBar />
       </div>
 
-      {status === 'idle' || (status === 'loading' && items.length === 0) ? (
-        <FeedSkeleton />
-      ) : items.length === 0 ? (
-        <div className="text-center py-20 px-6">
-          <p className="font-display text-lg mb-2">Nothing here yet</p>
-          <p className="text-slate-faint text-sm">
-            Follow people or create the first post to get your feed going.
-          </p>
-        </div>
-      ) : (
-        <>
-          {items.map((post) => (
-            <PostCard key={post._id} post={post} />
-          ))}
-          <div ref={loaderRef} className="py-8 text-center">
-            {status === 'loading' && <span className="text-slate-mute text-sm font-mono">loading more...</span>}
-            {!hasMore && items.length > 0 && (
-              <span className="text-slate-mute text-sm">You're all caught up</span>
-            )}
+      <div ref={feedScrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        {status === 'idle' || (status === 'loading' && items.length === 0) ? (
+          <FeedSkeleton />
+        ) : items.length === 0 ? (
+          <div className="px-6 py-20 text-center">
+            <p className="mb-2 font-display text-lg">Nothing here yet</p>
+            <p className="text-sm text-slate-faint">
+              Follow people or create the first post to get your feed going.
+            </p>
           </div>
-        </>
-      )}
+        ) : (
+          <>
+            {items.map((post) => (
+              <PostCard key={post._id} post={post} />
+            ))}
+            <div ref={loaderRef} className="py-8 text-center">
+              {status === 'loading' && <span className="font-mono text-sm text-slate-mute">loading more...</span>}
+              {!hasMore && items.length > 0 && (
+                <span className="text-sm text-slate-mute">You're all caught up</span>
+              )}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

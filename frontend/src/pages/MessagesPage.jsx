@@ -6,7 +6,7 @@ import Avatar from '../components/Avatar';
 import { messagesApi, usersApi } from '../api/resources';
 import { pushToast } from '../features/ui/uiSlice';
 import { fetchMe } from '../features/auth/authSlice';
-import { formatPresence } from '../utils/presence';
+import { formatPresence, formatPresenceBadge } from '../utils/presence';
 
 function formatTime(value) {
   return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(new Date(value));
@@ -425,14 +425,18 @@ export default function MessagesPage() {
                       onClick={() => setActiveUserId(conversation.id)}
                       className={`group flex w-full items-center gap-3 rounded-3xl px-4 py-3 text-left transition ${activeUserId === conversation.id ? 'bg-ink' : 'hover:bg-ink'}`}
                     >
-                      <div className="flex w-[68px] shrink-0 flex-col items-center gap-1 text-center">
+                      <div className="relative shrink-0">
                         <Avatar
                           src={conversation.participant?.profilePicture?.url}
                           alt={conversation.participant?.username}
                           size="md"
                           online={conversation.participant?.isOnline}
                         />
-                        <span className="max-w-full truncate text-[9px] leading-3 text-slate-faint">{formatPresence(conversation.participant)}</span>
+                        {!conversation.participant?.isOnline && formatPresenceBadge(conversation.participant) && (
+                          <span title={formatPresence(conversation.participant)} className="absolute -bottom-1 -right-2 rounded-full border-2 border-ink bg-ink-soft px-1 py-0.5 text-[9px] font-semibold leading-none text-slate-faint">
+                            {formatPresenceBadge(conversation.participant)}
+                          </span>
+                        )}
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">

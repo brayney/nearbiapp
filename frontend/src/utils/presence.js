@@ -14,3 +14,14 @@ export function formatPresence(user) {
   if (lastActive.toDateString() === yesterday.toDateString()) return `Last active yesterday at ${time}`;
   return `Last active ${new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: lastActive.getFullYear() === now.getFullYear() ? undefined : 'numeric' }).format(lastActive)} at ${time}`;
 }
+
+export function formatPresenceBadge(user) {
+  if (user?.isOnline) return '';
+  const lastActive = user?.lastActive ? new Date(user.lastActive) : null;
+  if (!lastActive || Number.isNaN(lastActive.getTime())) return '';
+
+  const elapsedMinutes = Math.max(0, Math.floor((Date.now() - lastActive.getTime()) / 60000));
+  if (elapsedMinutes < 60) return `${Math.max(1, elapsedMinutes)}m`;
+  if (elapsedMinutes < 24 * 60) return `${Math.floor(elapsedMinutes / 60)}h`;
+  return `${Math.floor(elapsedMinutes / (24 * 60))}d`;
+}
