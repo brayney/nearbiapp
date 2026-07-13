@@ -203,7 +203,7 @@ export default function AppShell() {
               <span className="truncate">Profile</span>
             </button>
             <nav className="space-y-2">
-              {[navItems[0], navItems[1], navItems[3], navItems[4], navItems[7]].map((item) => (
+              {[navItems[0], navItems[1], navItems[2], navItems[3], navItems[4], navItems[7]].map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
