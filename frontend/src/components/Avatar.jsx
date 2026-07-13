@@ -1,6 +1,7 @@
 import React from 'react';
 
 const SIZES = {
+  xs: 'w-6 h-6',
   sm: 'w-8 h-8',
   md: 'w-11 h-11',
   lg: 'w-16 h-16',

@@ -42,6 +42,7 @@ const ALLOWED_MIME = [
   'audio/mpeg',
   'audio/wav',
   'audio/ogg',
+  'audio/webm',
   'application/pdf',
   'text/plain',
   'application/msword',

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Ban, File, Image, Info, Link2, MoreVertical, Plus, Send, ShieldAlert, X } from 'lucide-react';
+import { Ban, File, Image, Info, Link2, Mic, MoreVertical, Plus, Send, ShieldAlert, Square, X } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import Avatar from '../components/Avatar';
 import { messagesApi, usersApi } from '../api/resources';
@@ -39,7 +39,12 @@ export default function MessagesPage() {
   const [mailboxOpen, setMailboxOpen] = useState(false);
   const [mailboxView, setMailboxView] = useState('requests');
   const [savingConnection, setSavingConnection] = useState(false);
+  const [expandedMessageId, setExpandedMessageId] = useState(null);
+  const [recordingVoice, setRecordingVoice] = useState(false);
   const bottomRef = useRef(null);
+  const recorderRef = useRef(null);
+  const recordingStreamRef = useRef(null);
+  const audioChunksRef = useRef([]);
 
   const loadConversations = async () => {
     const { data } = await messagesApi.getConversations();
@@ -91,6 +96,11 @@ export default function MessagesPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  useEffect(() => () => {
+    recorderRef.current?.stop();
+    recordingStreamRef.current?.getTracks().forEach((track) => track.stop());
+  }, []);
+
   const handleSend = async (event) => {
     event.preventDefault();
     const text = draft.trim();
@@ -108,6 +118,41 @@ export default function MessagesPage() {
       setDraft(text);
       dispatch(pushToast(err.response?.data?.message || 'Message could not be sent.', 'error'));
     }
+  };
+
+  const startVoiceRecording = async () => {
+    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+      dispatch(pushToast('Voice recording is not supported by this browser.', 'error'));
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : '';
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      audioChunksRef.current = [];
+      recordingStreamRef.current = stream;
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) audioChunksRef.current.push(event.data);
+      };
+      recorder.onstop = () => {
+        const type = recorder.mimeType || 'audio/webm';
+        const recording = new File([new Blob(audioChunksRef.current, { type })], `voice-message-${Date.now()}.webm`, { type });
+        if (recording.size > 0) setMediaFile(recording);
+        stream.getTracks().forEach((track) => track.stop());
+        recordingStreamRef.current = null;
+        recorderRef.current = null;
+        setRecordingVoice(false);
+      };
+      recorder.start();
+      recorderRef.current = recorder;
+      setRecordingVoice(true);
+    } catch (err) {
+      dispatch(pushToast(err.name === 'NotAllowedError' ? 'Allow microphone access to record a voice message.' : 'Could not start voice recording.', 'error'));
+    }
+  };
+
+  const stopVoiceRecording = () => {
+    if (recorderRef.current?.state === 'recording') recorderRef.current.stop();
   };
 
   const updateConnection = async (payload, successMessage) => {
@@ -175,19 +220,27 @@ export default function MessagesPage() {
       <div className="space-y-3">
         {messages.map((message) => {
           const own = String(message.sender) === String(currentUser?.id || currentUser?._id);
+          const isExpanded = expandedMessageId === message._id;
+          const sender = own ? currentUser : participant;
           return (
-            <div key={message._id} className={`flex ${own ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[80%] rounded-[22px] px-4 py-3 text-sm leading-5 shadow-sm ${own ? 'bg-coral text-ink' : 'bg-[#202020] text-paper'}`}>
+            <div key={message._id} className={`flex items-end gap-2 ${own ? 'justify-end' : 'justify-start'}`}>
+              {!own && <Avatar src={sender?.profilePicture?.url} alt={sender?.username} size="xs" />}
+              <div className="max-w-[80%]">
+              <div onClick={() => setExpandedMessageId((current) => current === message._id ? null : message._id)} className={`cursor-pointer rounded-[22px] px-4 py-3 text-sm leading-5 shadow-sm ${own ? 'bg-coral text-ink' : 'bg-[#202020] text-paper'}`}>
                 {message.media?.url && (message.media.type === 'video' ? (
                   <video src={message.media.url} controls className="mb-2 max-h-72 w-full rounded-xl" />
+                ) : message.media.type === 'audio' ? (
+                  <audio src={message.media.url} controls className="mb-1 w-full min-w-[13rem]" aria-label="Voice message" />
                 ) : message.media.type === 'file' ? (
                   <a href={message.media.url} target="_blank" rel="noreferrer" className="mb-2 flex items-center gap-2 rounded-xl bg-black/15 px-3 py-2 font-medium underline"><File size={16} />Open attachment</a>
                 ) : (
                   <img src={message.media.url} alt="Message attachment" className="mb-2 h-auto max-h-72 w-full rounded-xl object-cover" />
                 ))}
                 {message.text && <p className="break-words">{message.text}</p>}
-                <p className={`mt-2 text-[10px] ${own ? 'text-ink/65' : 'text-slate-faint'}`}>{formatTime(message.createdAt)}</p>
               </div>
+              {isExpanded && <p className={`mt-1 px-2 text-[10px] ${own ? 'text-right text-slate-faint' : 'text-slate-faint'}`}>{formatTime(message.createdAt)}</p>}
+              </div>
+              {own && <Avatar src={sender?.profilePicture?.url} alt={sender?.username} size="xs" />}
             </div>
           );
         })}
@@ -213,6 +266,14 @@ export default function MessagesPage() {
           placeholder="Message..."
         />
         <button
+          type="button"
+          onClick={recordingVoice ? stopVoiceRecording : startVoiceRecording}
+          className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition ${recordingVoice ? 'bg-coral text-ink animate-pulse' : 'bg-ink-soft text-slate-faint hover:text-paper'}`}
+          aria-label={recordingVoice ? 'Stop voice recording' : 'Record voice message'}
+        >
+          {recordingVoice ? <Square size={15} fill="currentColor" /> : <Mic size={18} />}
+        </button>
+        <button
           type="submit"
           disabled={!draft.trim() && !mediaFile}
           className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-coral text-ink transition disabled:cursor-not-allowed disabled:bg-slate-mute disabled:text-slate-faint"
@@ -223,7 +284,7 @@ export default function MessagesPage() {
       </form>
       {mediaFile && (
         <div className="mt-3 flex items-center justify-between rounded-2xl bg-ink-soft px-3 py-2 text-xs text-slate-faint">
-          <span className="truncate">{mediaFile.name}</span>
+          <span className="truncate">{mediaFile.type.startsWith('audio/') ? 'Voice message ready to send' : mediaFile.name}</span>
           <button type="button" onClick={() => setMediaFile(null)} className="text-coral" aria-label="Remove attachment"><X size={16} /></button>
         </div>
       )}
