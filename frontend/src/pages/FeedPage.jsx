@@ -32,14 +32,14 @@ export default function FeedPage() {
 
   return (
     <div className="mx-auto flex h-[calc(100dvh-var(--mobile-nav-height))] w-full max-w-xl flex-col md:h-screen md:px-4">
-      <div className="z-20 shrink-0 border-b border-ink-line bg-ink/95 backdrop-blur">
-        <header className="flex h-[76px] items-center justify-center px-4 md:px-0">
+      <header className="sticky top-0 z-20 shrink-0 border-b border-ink-line bg-ink/95 backdrop-blur">
+        <div className="flex h-[76px] items-center justify-center px-4 md:px-0">
           <Logo size={156} className="max-h-[58px]" />
-        </header>
-        <StoriesBar />
-      </div>
+        </div>
+      </header>
 
       <div ref={feedScrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <StoriesBar />
         {status === 'idle' || (status === 'loading' && items.length === 0) ? (
           <FeedSkeleton />
         ) : items.length === 0 ? (
