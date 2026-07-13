@@ -13,6 +13,10 @@ function canMessage(sender, recipient) {
   return policy === 'everyone' || (policy === 'followers' && recipient.followers.some((id) => id.equals(sender._id)));
 }
 
+function connectionFor(user, participantId) {
+  return (user.messageConnections || []).find((connection) => String(connection.user) === String(participantId));
+}
+
 exports.getConversations = catchAsync(async (req, res) => {
   const userId = req.user._id;
   const messages = await Message.find({ $or: [{ sender: userId }, { receiver: userId }] })
@@ -24,7 +28,8 @@ exports.getConversations = catchAsync(async (req, res) => {
     const participant = message.sender._id.equals(userId) ? message.receiver : message.sender;
     const id = String(participant._id);
     const existing = byParticipant.get(id);
-    const status = message.receiver._id.equals(userId) ? message.status : 'inbox';
+    const settings = connectionFor(req.user, participant._id);
+    const status = settings?.spam ? 'spam' : (message.receiver._id.equals(userId) ? message.status : 'inbox');
 
     if (!existing) {
       byParticipant.set(id, {
@@ -34,15 +39,22 @@ exports.getConversations = catchAsync(async (req, res) => {
         unread: 0,
         updatedAt: message.createdAt,
         status,
+        blocked: Boolean(settings?.blocked),
+        nickname: settings?.nickname || '',
       });
     } else {
       if (message.createdAt > existing.updatedAt) {
         existing.updatedAt = message.createdAt;
         existing.preview = message.text;
       }
-      if (existing.status !== 'request' && status === 'request') {
+      // Sending a reply accepts a request, so an old incoming request must not
+      // keep the whole thread trapped in the Requests folder.
+      if (message.sender._id.equals(userId)) existing.status = settings?.spam ? 'spam' : 'inbox';
+      else if (existing.status !== 'inbox' && existing.status !== 'spam' && status === 'request') {
         existing.status = 'request';
       }
+      existing.blocked = Boolean(settings?.blocked);
+      existing.nickname = settings?.nickname || '';
     }
 
     if (message.receiver._id.equals(userId) && !message.readAt) byParticipant.get(id).unread += 1;
@@ -71,8 +83,9 @@ exports.getConversation = catchAsync(async (req, res, next) => {
 
   const filter = { $or: [{ sender: req.user._id, receiver: participant._id }, { sender: participant._id, receiver: req.user._id }] };
   const messages = await Message.find(filter).sort({ createdAt: 1 });
+  const connection = connectionFor(req.user, participant._id);
   await Message.updateMany({ sender: participant._id, receiver: req.user._id, readAt: null }, { $set: { readAt: new Date() } });
-  res.status(200).json({ success: true, participant, messages });
+  res.status(200).json({ success: true, participant, messages, connection: connection || {} });
 });
 
 exports.sendMessage = catchAsync(async (req, res, next) => {
@@ -84,9 +97,25 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
   const recipient = await User.findById(req.params.userId).select(participantFields);
   if (!recipient) return next(new ApiError(404, 'User not found.'));
   if (!canMessage(req.user, recipient)) return next(new ApiError(403, 'This user is not accepting messages from you.'));
+  if (connectionFor(recipient, req.user._id)?.blocked) return next(new ApiError(403, 'This user has blocked you.'));
 
   const isRecipientFollowingSender = (recipient.following || []).some((id) => id.equals(req.user._id));
-  const messageStatus = isRecipientFollowingSender ? 'inbox' : 'request';
+  const existingThread = await Message.exists({
+    $or: [
+      { sender: req.user._id, receiver: recipient._id },
+      { sender: recipient._id, receiver: req.user._id },
+    ],
+  });
+  const messageStatus = (isRecipientFollowingSender || existingThread) ? 'inbox' : 'request';
+  if (existingThread) {
+    await Message.updateMany({
+      $or: [
+        { sender: req.user._id, receiver: recipient._id },
+        { sender: recipient._id, receiver: req.user._id },
+      ],
+      status: 'request',
+    }, { $set: { status: 'inbox' } });
+  }
 
   const uploaded = req.file ? normalizeUploadedFile(req.file) : null;
   const message = await Message.create({
@@ -98,6 +127,37 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
   });
   await createNotification({ type: 'message', actor: req.user, recipient, message: `${req.user.username} sent you a message.` });
   res.status(201).json({ success: true, message });
+});
+
+exports.updateConnection = catchAsync(async (req, res, next) => {
+  const participant = await User.findById(req.params.userId).select('_id');
+  if (!participant) return next(new ApiError(404, 'User not found.'));
+  if (String(participant._id) === String(req.user._id)) return next(new ApiError(400, 'You cannot update settings for yourself.'));
+
+  let connection = connectionFor(req.user, participant._id);
+  if (!connection) {
+    req.user.messageConnections.push({ user: participant._id });
+    connection = req.user.messageConnections[req.user.messageConnections.length - 1];
+  }
+  if (typeof req.body.nickname === 'string') connection.nickname = req.body.nickname.trim().slice(0, 50);
+  if (typeof req.body.blocked === 'boolean') connection.blocked = req.body.blocked;
+  if (typeof req.body.spam === 'boolean') connection.spam = req.body.spam;
+  await req.user.save({ validateBeforeSave: false });
+  res.status(200).json({ success: true, connection });
+});
+
+exports.reportConversation = catchAsync(async (req, res, next) => {
+  const participant = await User.findById(req.params.userId).select('_id username');
+  if (!participant) return next(new ApiError(404, 'User not found.'));
+  let connection = connectionFor(req.user, participant._id);
+  if (!connection) {
+    req.user.messageConnections.push({ user: participant._id, spam: true });
+    connection = req.user.messageConnections[req.user.messageConnections.length - 1];
+  } else {
+    connection.spam = true;
+  }
+  await req.user.save({ validateBeforeSave: false });
+  res.status(200).json({ success: true, message: 'Conversation reported and moved to spam.', connection });
 });
 
 exports.markRead = catchAsync(async (req, res) => {

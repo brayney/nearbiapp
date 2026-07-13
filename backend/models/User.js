@@ -73,6 +73,14 @@ const userSchema = new mongoose.Schema(
       text: { type: String, trim: true, maxlength: 60, default: '' },
       expiresAt: { type: Date, default: null },
     },
+    messageConnections: [
+      {
+        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+        nickname: { type: String, trim: true, maxlength: 50, default: '' },
+        blocked: { type: Boolean, default: false },
+        spam: { type: Boolean, default: false },
+      },
+    ],
     location: locationSchema,
     locationLabel: { type: String, default: '' }, // human-readable, e.g. "Ormoc City, PH"
     interests: [{ type: String, trim: true }],

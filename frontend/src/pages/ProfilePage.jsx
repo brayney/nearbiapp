@@ -201,9 +201,14 @@ export default function ProfilePage() {
                 className="border-4 border-ink rounded-full"
               />
               {isOwner && (
-                <div className="absolute -right-0 top-0 flex h-8 w-8 items-center justify-center rounded-full border border-ink-line bg-ink-soft text-slate-faint">
+                <button
+                  type="button"
+                  onClick={() => navigate('/feed?story=compose')}
+                  className="absolute -right-1 top-0 z-10 flex h-9 w-9 items-center justify-center rounded-full border-2 border-ink bg-coral text-ink transition hover:bg-coral-dim"
+                  aria-label="Add to your story"
+                >
                   <Plus size={16} />
-                </div>
+                </button>
               )}
             </div>
 
@@ -259,7 +264,7 @@ export default function ProfilePage() {
             </button>
           </div>
 
-          <div className="mt-6 border-t border-ink-line pt-4">
+          <div className="mt-6 mb-6 border-t border-ink-line pt-4">
             <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.28em] text-slate-faint">
               <button
                 type="button"

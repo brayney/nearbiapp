@@ -103,7 +103,7 @@ export default function AppShell() {
   });
 
   const showMobileCreate = ['/feed', '/explore'].includes(location.pathname);
-  const showBurger = true;
+  const showBurger = location.pathname === '/feed';
   const mobileNavItems = [navItems[0], navItems[1], navItems[3], navItems[5], navItems[4]];
 
   return (

@@ -27,7 +27,7 @@ const storage = new CloudinaryStorage({
   params: {
     folder: 'social-app',
     resource_type: 'auto',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4', 'mov', 'webm', 'mp3', 'wav', 'ogg'],
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4', 'mov', 'webm', 'mp3', 'wav', 'ogg', 'pdf', 'txt', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'],
   },
 });
 
@@ -42,6 +42,14 @@ const ALLOWED_MIME = [
   'audio/mpeg',
   'audio/wav',
   'audio/ogg',
+  'application/pdf',
+  'text/plain',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
 ];
 
 function fileFilter(req, file, cb) {
@@ -65,7 +73,9 @@ function normalizeUploadedFile(file) {
       ? 'audio'
       : file.mimetype === 'image/gif'
       ? 'gif'
-      : 'image',
+      : file.mimetype.startsWith('image')
+      ? 'image'
+      : 'file',
   };
 }
 

@@ -8,7 +8,7 @@ const messageSchema = new mongoose.Schema(
     media: {
       url: { type: String, default: '' },
       publicId: { type: String, default: '' },
-      type: { type: String, enum: ['', 'image', 'video', 'gif'], default: '' },
+      type: { type: String, enum: ['', 'image', 'video', 'gif', 'audio', 'file'], default: '' },
     },
     status: { type: String, enum: ['inbox', 'request'], default: 'inbox' },
     readAt: { type: Date, default: null },

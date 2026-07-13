@@ -7,6 +7,8 @@ const router = express.Router();
 router.use(protect);
 
 router.get('/conversations', messageController.getConversations);
+router.patch('/:userId/settings', messageController.updateConnection);
+router.post('/:userId/report', messageController.reportConversation);
 router.get('/:userId', messageController.getConversation);
 router.post('/:userId', upload.single('media'), messageController.sendMessage);
 router.post('/:conversationId/read', messageController.markRead);

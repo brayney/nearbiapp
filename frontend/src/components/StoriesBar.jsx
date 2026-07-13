@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Image, Plus, X } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import Avatar from './Avatar';
@@ -7,6 +8,8 @@ import { pushToast } from '../features/ui/uiSlice';
 
 export default function StoriesBar() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const currentUser = useSelector((state) => state.auth.user);
   const [stories, setStories] = useState([]);
   const [creating, setCreating] = useState(false);
@@ -14,6 +17,15 @@ export default function StoriesBar() {
   const [media, setMedia] = useState(null);
   const [saving, setSaving] = useState(false);
   const [active, setActive] = useState(null);
+
+  useEffect(() => {
+    if (searchParams.get('story') === 'compose') setCreating(true);
+  }, [searchParams]);
+
+  const closeComposer = () => {
+    setCreating(false);
+    if (searchParams.get('story') === 'compose') navigate('/feed', { replace: true });
+  };
 
   const loadStories = async () => {
     try {
@@ -48,7 +60,7 @@ export default function StoriesBar() {
       setStories((items) => [data.story, ...items]);
       setText('');
       setMedia(null);
-      setCreating(false);
+      closeComposer();
     } catch (err) {
       dispatch(pushToast(err.response?.data?.message || 'Could not create story.', 'error'));
     } finally {
@@ -79,9 +91,9 @@ export default function StoriesBar() {
       </div>
 
       {creating && (
-        <div className="fixed inset-0 z-50 flex items-end bg-black/60 sm:items-center sm:justify-center sm:p-4" onMouseDown={() => !saving && setCreating(false)}>
+        <div className="fixed inset-0 z-50 flex items-end bg-black/60 sm:items-center sm:justify-center sm:p-4" onMouseDown={() => !saving && closeComposer()}>
           <form onSubmit={createStory} onMouseDown={(event) => event.stopPropagation()} className="w-full max-w-md rounded-t-2xl border border-ink-line bg-ink p-5 sm:rounded-2xl">
-            <div className="mb-4 flex items-center justify-between"><h2 className="font-display text-xl">Add to your story</h2><button type="button" onClick={() => setCreating(false)} className="rounded-full p-2 text-slate-faint hover:bg-ink-soft"><X size={18} /></button></div>
+            <div className="mb-4 flex items-center justify-between"><h2 className="font-display text-xl">Add to your story</h2><button type="button" onClick={closeComposer} className="rounded-full p-2 text-slate-faint hover:bg-ink-soft"><X size={18} /></button></div>
             <textarea value={text} onChange={(event) => setText(event.target.value)} maxLength={280} rows={4} placeholder="Share something…" className="w-full resize-none rounded-xl border border-ink-line bg-ink-soft p-3 text-sm outline-none focus:border-teal-bright" />
             <label className="mt-3 flex cursor-pointer items-center gap-2 rounded-xl border border-ink-line px-3 py-2 text-sm text-slate-faint hover:bg-ink-soft"><Image size={18} />{media ? media.name : 'Add photo or video'}<input type="file" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime,video/webm" className="hidden" onChange={(event) => setMedia(event.target.files?.[0] || null)} /></label>
             <button type="submit" disabled={saving || (!text.trim() && !media)} className="mt-4 w-full rounded-xl bg-coral py-2.5 font-semibold text-ink disabled:opacity-50">{saving ? 'Sharing…' : 'Share story'}</button>

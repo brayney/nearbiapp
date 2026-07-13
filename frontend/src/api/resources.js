@@ -50,6 +50,8 @@ export const messagesApi = {
   getConversation: (userId) => api.get(`/messages/${userId}`),
   sendMessage: (userId, formData) => api.post(`/messages/${userId}`, formData),
   markRead: (conversationId) => api.post(`/messages/${conversationId}/read`),
+  updateSettings: (userId, payload) => api.patch(`/messages/${userId}/settings`, payload),
+  reportConversation: (userId) => api.post(`/messages/${userId}/report`),
 };
 
 export const storiesApi = {

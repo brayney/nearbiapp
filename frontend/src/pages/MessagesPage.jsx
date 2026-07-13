@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Image, Info, Plus, Send, X } from 'lucide-react';
+import { Ban, File, Image, Info, Link2, MoreVertical, Plus, Send, ShieldAlert, X } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import Avatar from '../components/Avatar';
 import { messagesApi, usersApi } from '../api/resources';
@@ -33,6 +33,12 @@ export default function MessagesPage() {
   const [noteText, setNoteText] = useState('');
   const [ownNote, setOwnNote] = useState('');
   const [savingNote, setSavingNote] = useState(false);
+  const [connection, setConnection] = useState({});
+  const [nickname, setNickname] = useState('');
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [mailboxOpen, setMailboxOpen] = useState(false);
+  const [mailboxView, setMailboxView] = useState('requests');
+  const [savingConnection, setSavingConnection] = useState(false);
   const bottomRef = useRef(null);
 
   const loadConversations = async () => {
@@ -75,7 +81,7 @@ export default function MessagesPage() {
     if (!activeUserId) return;
     setThreadError('');
     messagesApi.getConversation(activeUserId)
-      .then(({ data }) => { setParticipant(data.participant); setMessages(data.messages || []); loadConversations().catch(() => {}); })
+      .then(({ data }) => { setParticipant(data.participant); setMessages(data.messages || []); setConnection(data.connection || {}); setNickname(data.connection?.nickname || ''); loadConversations().catch(() => {}); })
       .catch((err) => { const error = err.response?.data?.message || 'Could not open this conversation.'; setParticipant(null); setMessages([]); setThreadError(error); dispatch(pushToast(error, 'error')); });
   }, [activeUserId]);
 
@@ -104,6 +110,38 @@ export default function MessagesPage() {
     }
   };
 
+  const updateConnection = async (payload, successMessage) => {
+    if (!activeUserId) return;
+    setSavingConnection(true);
+    try {
+      const { data } = await messagesApi.updateSettings(activeUserId, payload);
+      setConnection(data.connection || {});
+      setNickname(data.connection?.nickname || '');
+      await loadConversations();
+      if (successMessage) dispatch(pushToast(successMessage, 'success'));
+    } catch (err) {
+      dispatch(pushToast(err.response?.data?.message || 'Could not update conversation settings.', 'error'));
+    } finally {
+      setSavingConnection(false);
+    }
+  };
+
+  const reportConversation = async () => {
+    if (!activeUserId) return;
+    setSavingConnection(true);
+    try {
+      await messagesApi.reportConversation(activeUserId);
+      setConnection((current) => ({ ...current, spam: true }));
+      setDetailsOpen(false);
+      await loadConversations();
+      dispatch(pushToast('Conversation reported and moved to spam.', 'success'));
+    } catch (err) {
+      dispatch(pushToast(err.response?.data?.message || 'Could not report this conversation.', 'error'));
+    } finally {
+      setSavingConnection(false);
+    }
+  };
+
   const activeName = participant?.displayName || participant?.username || 'Conversation';
   let body = <EmptyThread />;
   if (activeUserId && threadError) body = <div className="m-auto max-w-sm px-6 text-center"><p className="font-semibold">Conversation unavailable</p><p className="mt-2 text-sm text-slate-faint">{threadError}</p></div>;
@@ -128,7 +166,9 @@ export default function MessagesPage() {
             <p className="text-[11px] text-slate-faint">{participant.isOnline ? 'Active now' : 'Direct message'}</p>
           </div>
         </div>
-        <Info size={22} className="text-slate-faint" />
+        <button type="button" onClick={() => setDetailsOpen(true)} className="rounded-full p-2 text-slate-faint transition hover:bg-ink-soft hover:text-paper" aria-label="Conversation details">
+          <Info size={22} />
+        </button>
       </div>
     </header>
     <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5 sm:py-5">
@@ -140,6 +180,8 @@ export default function MessagesPage() {
               <div className={`max-w-[80%] rounded-[22px] px-4 py-3 text-sm leading-5 shadow-sm ${own ? 'bg-coral text-ink' : 'bg-[#202020] text-paper'}`}>
                 {message.media?.url && (message.media.type === 'video' ? (
                   <video src={message.media.url} controls className="mb-2 max-h-72 w-full rounded-xl" />
+                ) : message.media.type === 'file' ? (
+                  <a href={message.media.url} target="_blank" rel="noreferrer" className="mb-2 flex items-center gap-2 rounded-xl bg-black/15 px-3 py-2 font-medium underline"><File size={16} />Open attachment</a>
                 ) : (
                   <img src={message.media.url} alt="Message attachment" className="mb-2 h-auto max-h-72 w-full rounded-xl object-cover" />
                 ))}
@@ -158,7 +200,7 @@ export default function MessagesPage() {
           <Image size={18} />
           <input
             type="file"
-            accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime,video/webm"
+            accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime,video/webm,audio/mpeg,audio/wav,audio/ogg,application/pdf,text/plain,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
             className="hidden"
             onChange={(event) => setMediaFile(event.target.files?.[0] || null)}
           />
@@ -192,8 +234,11 @@ export default function MessagesPage() {
     <div className="fixed inset-x-0 top-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] overflow-hidden bg-ink text-paper md:static md:h-screen md:p-5">
       <div className="mx-auto flex h-full max-w-6xl overflow-visible bg-ink-soft md:min-h-[calc(100vh-40px)] md:rounded-2xl md:border md:border-ink-line">
         <aside className={`h-full w-full shrink-0 flex-col overflow-visible border-r border-ink-line sm:w-[350px] ${activeUserId && isMobile ? 'hidden' : 'flex'}`}>
-          <header className="flex h-[60px] items-center justify-center border-b border-ink-line px-5">
+          <header className="flex h-[60px] items-center justify-between border-b border-ink-line px-5">
             <h1 className="font-display text-xl">Messages</h1>
+            <button type="button" onClick={() => setMailboxOpen(true)} className="rounded-full p-2 text-slate-faint transition hover:bg-ink hover:text-paper" aria-label="Message folders">
+              <MoreVertical size={21} />
+            </button>
           </header>
           <div className="border-b border-ink-line px-3 py-3">
             <div className="flex gap-3 overflow-x-auto px-1 pb-1">
@@ -238,38 +283,10 @@ export default function MessagesPage() {
             </div>
           ) : (
             <div className="space-y-4 px-2 py-2 sm:px-0">
-              {conversations.filter((conversation) => conversation.status === 'request').length > 0 && (
-                <div>
-                  <div className="mb-2 px-4 text-xs uppercase tracking-[0.2em] text-slate-faint">Message Requests</div>
-                  <div className="space-y-1">
-                    {conversations.filter((conversation) => conversation.status === 'request').map((conversation) => (
-                      <button
-                        key={conversation.id}
-                        onClick={() => setActiveUserId(conversation.id)}
-                        className={`group flex w-full items-center gap-3 rounded-3xl border border-ink-line px-4 py-3 text-left transition ${activeUserId === conversation.id ? 'bg-ink' : 'hover:bg-ink'}`}
-                      >
-                        <Avatar
-                          src={conversation.participant?.profilePicture?.url}
-                          alt={conversation.participant?.username}
-                          size="md"
-                          online={conversation.participant?.isOnline}
-                        />
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center justify-between gap-2">
-                            <p className="truncate text-sm font-medium text-paper">{conversation.participant?.displayName || conversation.participant?.username}</p>
-                            {conversation.unread > 0 && <span className="inline-flex h-2.5 w-2.5 rounded-full bg-coral" />}
-                          </div>
-                          <p className="mt-1 truncate text-xs text-slate-faint">{conversation.preview}</p>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
               <div>
                 <div className="mb-2 px-4 text-xs uppercase tracking-[0.2em] text-slate-faint">Inbox</div>
                 <div className="space-y-1">
-                  {conversations.filter((conversation) => conversation.status !== 'request').map((conversation) => (
+                  {conversations.filter((conversation) => conversation.status === 'inbox' && !conversation.blocked).map((conversation) => (
                     <button
                       key={conversation.id}
                       onClick={() => setActiveUserId(conversation.id)}
@@ -290,6 +307,7 @@ export default function MessagesPage() {
                       </div>
                     </button>
                   ))}
+                  {conversations.filter((conversation) => conversation.status === 'inbox' && !conversation.blocked).length === 0 && <p className="px-4 py-8 text-center text-sm text-slate-faint">No inbox conversations yet.</p>}
                 </div>
               </div>
             </div>
@@ -299,6 +317,46 @@ export default function MessagesPage() {
         </aside>
         <section className={`min-w-0 min-h-0 h-full flex flex-1 flex-col overflow-hidden ${activeUserId ? 'flex' : 'hidden sm:flex'}`}>{body}</section>
       </div>
+
+      {detailsOpen && participant && (
+        <div className="fixed inset-0 z-[70] flex justify-end bg-black/60" role="dialog" aria-modal="true" aria-label="Conversation details" onMouseDown={() => setDetailsOpen(false)}>
+          <aside className="flex h-full w-full max-w-md flex-col overflow-y-auto border-l border-ink-line bg-ink p-5 shadow-2xl" onMouseDown={(event) => event.stopPropagation()}>
+            <div className="flex items-center justify-between"><h2 className="font-display text-xl">Conversation details</h2><button type="button" onClick={() => setDetailsOpen(false)} className="rounded-full p-2 text-slate-faint hover:bg-ink-soft" aria-label="Close"><X size={20} /></button></div>
+            <div className="mt-6 flex flex-col items-center text-center"><Avatar src={participant.profilePicture?.url} alt={participant.username} size="xl" online={participant.isOnline} /><p className="mt-3 font-semibold">{connection.nickname || activeName}</p><p className="text-sm text-slate-faint">@{participant.username}</p></div>
+            <form className="mt-7" onSubmit={(event) => { event.preventDefault(); updateConnection({ nickname }, 'Nickname saved.'); }}>
+              <label className="block text-sm font-semibold">Nickname<input value={nickname} onChange={(event) => setNickname(event.target.value)} maxLength={50} placeholder="Set a nickname" className="mt-2 w-full rounded-xl border border-ink-line bg-ink-soft px-3 py-2.5 text-sm font-normal outline-none focus:border-teal-bright" /></label>
+              <button type="submit" disabled={savingConnection} className="mt-2 rounded-xl bg-ink-soft px-4 py-2 text-sm font-semibold hover:bg-ink-line disabled:opacity-50">Save nickname</button>
+            </form>
+            <DetailSection icon={<Image size={17} />} title="Media" items={messages.filter((message) => message.media?.url)} renderItem={(message) => <a href={message.media.url} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-xl bg-ink-soft"><img src={message.media.url} alt="Shared media" className="h-24 w-full object-cover" /></a>} empty="No shared media yet." />
+            <DetailSection icon={<File size={17} />} title="Files" items={messages.filter((message) => message.media?.type === 'file')} renderItem={(message) => <a href={message.media.url} target="_blank" rel="noreferrer" className="col-span-3 flex items-center gap-2 rounded-xl bg-ink-soft px-3 py-2 text-sm text-coral hover:underline"><File size={16} />Open shared file</a>} empty="No shared files yet." />
+            <DetailSection icon={<Link2 size={17} />} title="Links" items={messages.flatMap((message) => (message.text?.match(/https?:\/\/[^\s]+/g) || []).map((url) => ({ url, id: `${message._id}-${url}` })))} renderItem={(link) => <a href={link.url} target="_blank" rel="noreferrer" className="block truncate rounded-xl bg-ink-soft px-3 py-2 text-sm text-coral hover:underline">{link.url}</a>} empty="No shared links yet." />
+            <div className="mt-7 border-t border-ink-line pt-5 space-y-2">
+              <button type="button" disabled={savingConnection} onClick={() => updateConnection({ blocked: !connection.blocked }, connection.blocked ? 'User unblocked.' : 'User blocked.')} className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold text-coral hover:bg-ink-soft disabled:opacity-50"><Ban size={18} />{connection.blocked ? 'Unblock user' : 'Block user'}</button>
+              <button type="button" disabled={savingConnection} onClick={reportConversation} className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold text-coral hover:bg-ink-soft disabled:opacity-50"><ShieldAlert size={18} />Report conversation</button>
+            </div>
+          </aside>
+        </div>
+      )}
+
+      {mailboxOpen && (
+        <div className="fixed inset-0 z-[70] flex items-end bg-black/60 sm:items-center sm:justify-center sm:p-4" role="dialog" aria-modal="true" aria-label="Message folders" onMouseDown={() => setMailboxOpen(false)}>
+          <section className="w-full max-w-md overflow-hidden rounded-t-2xl border border-ink-line bg-ink shadow-2xl sm:rounded-2xl" onMouseDown={(event) => event.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-ink-line px-5 py-4"><h2 className="font-display text-xl">Message folders</h2><button type="button" onClick={() => setMailboxOpen(false)} className="rounded-full p-2 text-slate-faint hover:bg-ink-soft" aria-label="Close"><X size={18} /></button></div>
+            <div className="flex border-b border-ink-line"><FolderTab active={mailboxView === 'requests'} onClick={() => setMailboxView('requests')}>Requests</FolderTab><FolderTab active={mailboxView === 'spam'} onClick={() => setMailboxView('spam')}>Spam</FolderTab><FolderTab active={mailboxView === 'blocked'} onClick={() => setMailboxView('blocked')}>Blocked</FolderTab></div>
+            <div className="max-h-[60vh] overflow-y-auto p-2">
+              {conversations.filter((conversation) => mailboxView === 'blocked' ? conversation.blocked : conversation.status === (mailboxView === 'requests' ? 'request' : 'spam')).length === 0 ? <p className="py-10 text-center text-sm text-slate-faint">No {mailboxView} conversations.</p> : conversations.filter((conversation) => mailboxView === 'blocked' ? conversation.blocked : conversation.status === (mailboxView === 'requests' ? 'request' : 'spam')).map((conversation) => <button key={conversation.id} type="button" onClick={() => { setMailboxOpen(false); setActiveUserId(conversation.id); }} className="flex w-full items-center gap-3 rounded-xl p-3 text-left hover:bg-ink-soft"><Avatar src={conversation.participant?.profilePicture?.url} alt={conversation.participant?.username} size="md" /><div className="min-w-0"><p className="truncate text-sm font-semibold">{conversation.nickname || conversation.participant?.displayName || conversation.participant?.username}</p><p className="truncate text-xs text-slate-faint">{conversation.preview}</p></div></button>)}
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
+}
+
+function DetailSection({ icon, title, items, renderItem, empty }) {
+  return <section className="mt-7"><h3 className="flex items-center gap-2 text-sm font-semibold">{icon}{title}</h3><div className="mt-3 grid grid-cols-3 gap-2">{items.length ? items.map((item) => <React.Fragment key={item._id || item.id}>{renderItem(item)}</React.Fragment>) : <p className="col-span-3 text-sm text-slate-faint">{empty}</p>}</div></section>;
+}
+
+function FolderTab({ active, onClick, children }) {
+  return <button type="button" onClick={onClick} className={`flex-1 px-3 py-3 text-sm font-semibold ${active ? 'border-b-2 border-coral text-paper' : 'text-slate-faint'}`}>{children}</button>;
 }
