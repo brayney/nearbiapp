@@ -36,7 +36,7 @@ function setAuthCookies(res, accessToken, refreshToken) {
   const cookieOptions = {
     httpOnly: true,
     secure: isProd,
-    sameSite: isProd ? 'none' : 'lax',
+    sameSite: 'none',
     path: '/api',
   };
 
@@ -51,8 +51,9 @@ function setAuthCookies(res, accessToken, refreshToken) {
 }
 
 function clearAuthCookies(res) {
-  res.clearCookie('accessToken', { path: '/api' });
-  res.clearCookie('refreshToken', { path: '/api' });
+  const clearOptions = { path: '/api', sameSite: 'none' };
+  res.clearCookie('accessToken', clearOptions);
+  res.clearCookie('refreshToken', clearOptions);
 }
 
 module.exports = {
