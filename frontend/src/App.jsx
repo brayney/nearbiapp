@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
+import { usersApi } from './api/resources';
 import { fetchMe, forceLogout } from './features/auth/authSlice';
 import ProtectedRoute from './components/ProtectedRoute';
 import AppShell from './components/AppShell';
@@ -31,6 +32,20 @@ export default function App() {
   useEffect(() => {
     dispatch(fetchMe());
   }, [dispatch]);
+
+  useEffect(() => {
+    const updatePresence = () => usersApi.updatePresence().catch(() => {});
+    updatePresence();
+    const interval = window.setInterval(updatePresence, 60 * 1000);
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') updatePresence();
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, []);
 
   useEffect(() => {
     const onLogout = () => {

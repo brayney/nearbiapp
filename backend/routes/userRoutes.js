@@ -11,6 +11,7 @@ router.get('/mentions', protect, userController.getMentionSuggestions);
 router.get('/nearby', protect, userController.getNearbyUsers);
 
 router.patch('/me', protect, userController.updateProfile);
+router.patch('/me/presence', protect, userController.updatePresence);
 router.patch('/me/privacy', protect, userController.updatePrivacySettings);
 router.get('/me/privacy', protect, userController.getPrivacySettings);
 router.patch('/me/note', protect, userController.updateNote);

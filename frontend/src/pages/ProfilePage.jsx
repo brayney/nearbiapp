@@ -6,6 +6,7 @@ import Avatar from '../components/Avatar';
 import { usersApi, postsApi } from '../api/resources';
 import { pushToast } from '../features/ui/uiSlice';
 import { logoutUser, setUser } from '../features/auth/authSlice';
+import { formatPresence } from '../utils/presence';
 
 export default function ProfilePage() {
   const { username } = useParams();
@@ -217,6 +218,7 @@ export default function ProfilePage() {
                 <span className="text-2xl font-semibold tracking-tight">{profile.displayName || profile.username}</span>
                 <span className="text-sm text-slate-faint">@{profile.username}</span>
               </div>
+              {!isOwner && <p className="mt-2 text-sm text-slate-faint">{formatPresence(profile)}</p>}
               {followsYou && <p className="mt-2 text-sm text-coral">Follows you</p>}
               {profile.bio && <p className="mt-3 text-sm text-slate-faint max-w-2xl">{profile.bio}</p>}
             </div>

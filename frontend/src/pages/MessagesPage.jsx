@@ -6,6 +6,7 @@ import Avatar from '../components/Avatar';
 import { messagesApi, usersApi } from '../api/resources';
 import { pushToast } from '../features/ui/uiSlice';
 import { fetchMe } from '../features/auth/authSlice';
+import { formatPresence } from '../utils/presence';
 
 function formatTime(value) {
   return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(new Date(value));
@@ -248,7 +249,7 @@ export default function MessagesPage() {
           <Avatar src={participant.profilePicture?.url} alt={participant.username} size="sm" online={participant.isOnline} />
           <div>
             <p className="text-sm font-semibold tracking-tight">{activeName}</p>
-            <p className="text-[11px] text-slate-faint">{participant.isOnline ? 'Active now' : 'Direct message'}</p>
+            <p className="text-[11px] text-slate-faint">{formatPresence(participant)}</p>
           </div>
         </div>
         <button type="button" onClick={() => setDetailsOpen(true)} className="rounded-full p-2 text-slate-faint transition hover:bg-ink-soft hover:text-paper" aria-label="Conversation details">
@@ -293,7 +294,7 @@ export default function MessagesPage() {
           <Image size={18} />
           <input
             type="file"
-            accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime,video/webm,audio/mpeg,audio/wav,audio/ogg,application/pdf,text/plain,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+            accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime,video/webm,audio/mpeg,audio/wav,audio/ogg,audio/webm,audio/mp4,application/pdf,text/plain,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
             className="hidden"
             onChange={(event) => setMediaFile(event.target.files?.[0] || null)}
           />
@@ -413,7 +414,7 @@ export default function MessagesPage() {
                           <p className="truncate text-sm font-medium text-paper">{conversation.nickname || conversation.participant?.displayName || conversation.participant?.username}</p>
                           {conversation.unread > 0 && <span className="inline-flex h-2.5 w-2.5 rounded-full bg-coral" />}
                         </div>
-                        <p className="mt-1 truncate text-xs text-slate-faint">{conversation.preview}</p>
+                        <p className="mt-1 truncate text-xs text-slate-faint">{formatPresence(conversation.participant)}{conversation.preview ? ` · ${conversation.preview}` : ''}</p>
                       </div>
                     </button>
                   ))}
@@ -432,7 +433,7 @@ export default function MessagesPage() {
         <div className="fixed inset-0 z-[70] flex justify-end bg-black/60" role="dialog" aria-modal="true" aria-label="Conversation details" onMouseDown={() => setDetailsOpen(false)}>
           <aside className="flex h-full w-full max-w-md flex-col overflow-y-auto border-l border-ink-line bg-ink p-5 shadow-2xl" onMouseDown={(event) => event.stopPropagation()}>
             <div className="flex items-center justify-between"><h2 className="font-display text-xl">Conversation details</h2><button type="button" onClick={() => setDetailsOpen(false)} className="rounded-full p-2 text-slate-faint hover:bg-ink-soft" aria-label="Close"><X size={20} /></button></div>
-            <div className="mt-6 flex flex-col items-center text-center"><Avatar src={participant.profilePicture?.url} alt={participant.username} size="xl" online={participant.isOnline} /><p className="mt-3 font-semibold">{connection.nickname || activeName}</p><p className="text-sm text-slate-faint">@{participant.username}</p></div>
+            <div className="mt-6 flex flex-col items-center text-center"><Avatar src={participant.profilePicture?.url} alt={participant.username} size="xl" online={participant.isOnline} /><p className="mt-3 font-semibold">{connection.nickname || activeName}</p><p className="text-sm text-slate-faint">@{participant.username}</p><p className="mt-1 text-xs text-slate-faint">{formatPresence(participant)}</p></div>
             <form className="mt-7" onSubmit={(event) => { event.preventDefault(); updateConnection({ nickname }, 'Nickname saved.'); }}>
               <label className="block text-sm font-semibold">Nickname<input value={nickname} onChange={(event) => setNickname(event.target.value)} maxLength={50} placeholder="Set a nickname" className="mt-2 w-full rounded-xl border border-ink-line bg-ink-soft px-3 py-2.5 text-sm font-normal outline-none focus:border-teal-bright" /></label>
               <button type="submit" disabled={savingConnection} className="mt-2 rounded-xl bg-ink-soft px-4 py-2 text-sm font-semibold hover:bg-ink-line disabled:opacity-50">Save nickname</button>
@@ -454,7 +455,7 @@ export default function MessagesPage() {
             <div className="flex items-center justify-between border-b border-ink-line px-5 py-4"><h2 className="font-display text-xl">Message folders</h2><button type="button" onClick={() => setMailboxOpen(false)} className="rounded-full p-2 text-slate-faint hover:bg-ink-soft" aria-label="Close"><X size={18} /></button></div>
             <div className="flex border-b border-ink-line"><FolderTab active={mailboxView === 'requests'} onClick={() => setMailboxView('requests')}>Requests</FolderTab><FolderTab active={mailboxView === 'spam'} onClick={() => setMailboxView('spam')}>Spam</FolderTab><FolderTab active={mailboxView === 'blocked'} onClick={() => setMailboxView('blocked')}>Blocked</FolderTab></div>
             <div className="max-h-[60vh] overflow-y-auto p-2">
-              {conversations.filter((conversation) => mailboxView === 'blocked' ? conversation.blocked : conversation.status === (mailboxView === 'requests' ? 'request' : 'spam')).length === 0 ? <p className="py-10 text-center text-sm text-slate-faint">No {mailboxView} conversations.</p> : conversations.filter((conversation) => mailboxView === 'blocked' ? conversation.blocked : conversation.status === (mailboxView === 'requests' ? 'request' : 'spam')).map((conversation) => <button key={conversation.id} type="button" onClick={() => { setMailboxOpen(false); setActiveUserId(conversation.id); }} className="flex w-full items-center gap-3 rounded-xl p-3 text-left hover:bg-ink-soft"><Avatar src={conversation.participant?.profilePicture?.url} alt={conversation.participant?.username} size="md" /><div className="min-w-0"><p className="truncate text-sm font-semibold">{conversation.nickname || conversation.participant?.displayName || conversation.participant?.username}</p><p className="truncate text-xs text-slate-faint">{conversation.preview}</p></div></button>)}
+              {conversations.filter((conversation) => mailboxView === 'blocked' ? conversation.blocked : conversation.status === (mailboxView === 'requests' ? 'request' : 'spam')).length === 0 ? <p className="py-10 text-center text-sm text-slate-faint">No {mailboxView} conversations.</p> : conversations.filter((conversation) => mailboxView === 'blocked' ? conversation.blocked : conversation.status === (mailboxView === 'requests' ? 'request' : 'spam')).map((conversation) => <button key={conversation.id} type="button" onClick={() => { setMailboxOpen(false); setActiveUserId(conversation.id); }} className="flex w-full items-center gap-3 rounded-xl p-3 text-left hover:bg-ink-soft"><Avatar src={conversation.participant?.profilePicture?.url} alt={conversation.participant?.username} size="md" online={conversation.participant?.isOnline} /><div className="min-w-0"><p className="truncate text-sm font-semibold">{conversation.nickname || conversation.participant?.displayName || conversation.participant?.username}</p><p className="truncate text-xs text-slate-faint">{formatPresence(conversation.participant)}{conversation.preview ? ` · ${conversation.preview}` : ''}</p></div></button>)}
             </div>
           </section>
         </div>

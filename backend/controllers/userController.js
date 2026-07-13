@@ -5,6 +5,13 @@ const catchAsync = require('../utils/catchAsync');
 const { normalizeUploadedFile, cloudinary, usingCloudinary } = require('../utils/upload');
 const { buildFollowNotification } = require('../utils/notifications');
 
+exports.updatePresence = catchAsync(async (req, res) => {
+  req.user.isOnline = true;
+  req.user.lastActive = new Date();
+  await req.user.save({ validateBeforeSave: false });
+  res.status(204).send();
+});
+
 exports.getProfile = catchAsync(async (req, res, next) => {
   const user = await User.findOne({ username: req.params.username.toLowerCase() });
   if (!user) return next(new ApiError(404, 'User not found.'));

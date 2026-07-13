@@ -179,6 +179,9 @@ userSchema.methods.isLocked = function () {
 };
 
 userSchema.methods.toPublicProfile = function () {
+  // A browser can close without hitting logout. Treat a user as offline when
+  // their heartbeat has expired instead of leaving a stale online indicator.
+  const isCurrentlyOnline = Boolean(this.isOnline && this.lastActive && Date.now() - this.lastActive.getTime() < 2 * 60 * 1000);
   return {
     id: this._id,
     username: this.username,
@@ -191,7 +194,7 @@ userSchema.methods.toPublicProfile = function () {
     followersCount: this.followers?.length ?? this.followersCount ?? 0,
     followingCount: this.following?.length ?? this.followingCount ?? 0,
     postsCount: this.postsCount,
-    isOnline: this.isOnline,
+    isOnline: isCurrentlyOnline,
     lastActive: this.lastActive,
     locationLabel: this.locationLabel,
     interests: this.interests,

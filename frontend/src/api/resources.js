@@ -29,6 +29,7 @@ export const postsApi = {
 export const usersApi = {
   getProfile: (username) => api.get(`/users/${username}`),
   updateProfile: (payload) => api.patch('/users/me', payload),
+  updatePresence: () => api.patch('/users/me/presence'),
   updateNote: (payload) => api.patch('/users/me/note', payload),
   updatePrivacy: (payload) => api.patch('/users/me/privacy', payload),
   getPrivacy: () => api.get('/users/me/privacy'),

@@ -55,7 +55,11 @@ const ALLOWED_MIME = [
 ];
 
 function fileFilter(req, file, cb) {
-  if (ALLOWED_MIME.includes(file.mimetype)) return cb(null, true);
+  // MediaRecorder commonly appends codec information (for example,
+  // `audio/webm;codecs=opus`). Multer preserves that value, so compare the
+  // base MIME type instead of rejecting otherwise-valid voice recordings.
+  const mimeType = file.mimetype.split(';', 1)[0].toLowerCase();
+  if (ALLOWED_MIME.includes(mimeType)) return cb(null, true);
   cb(new Error(`Unsupported file type: ${file.mimetype}`), false);
 }
 
@@ -66,16 +70,17 @@ const upload = multer({
 });
 
 function normalizeUploadedFile(file) {
+  const mimeType = file.mimetype.split(';', 1)[0].toLowerCase();
   return {
     url: file.path,
     publicId: file.filename,
-    type: file.mimetype.startsWith('video')
+    type: mimeType.startsWith('video')
       ? 'video'
-      : file.mimetype.startsWith('audio')
+      : mimeType.startsWith('audio')
       ? 'audio'
-      : file.mimetype === 'image/gif'
+      : mimeType === 'image/gif'
       ? 'gif'
-      : file.mimetype.startsWith('image')
+      : mimeType.startsWith('image')
       ? 'image'
       : 'file',
   };

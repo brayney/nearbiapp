@@ -40,6 +40,13 @@ const protect = catchAsync(async (req, res, next) => {
   }
 
   req.user = user;
+  // Keep presence fresh for normal authenticated activity. The client also
+  // sends a lightweight heartbeat while it remains open.
+  if (!user.isOnline || !user.lastActive || Date.now() - user.lastActive.getTime() > 30 * 1000) {
+    User.updateOne({ _id: user._id }, { $set: { isOnline: true, lastActive: new Date() } }).catch(() => {});
+    user.isOnline = true;
+    user.lastActive = new Date();
+  }
   next();
 });
 

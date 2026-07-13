@@ -8,6 +8,14 @@ const { normalizeUploadedFile } = require('../utils/upload');
 const participantFields = 'username displayName profilePicture isOnline lastActive privacySettings followers following';
 const followingFields = 'username displayName profilePicture isOnline lastActive note';
 
+function withCurrentPresence(user) {
+  const participant = user.toObject ? user.toObject() : user;
+  return {
+    ...participant,
+    isOnline: Boolean(participant.isOnline && participant.lastActive && Date.now() - new Date(participant.lastActive).getTime() < 2 * 60 * 1000),
+  };
+}
+
 function canMessage(sender, recipient) {
   const policy = recipient.privacySettings?.whoCanMessage || 'everyone';
   return policy === 'everyone' || (policy === 'followers' && recipient.followers.some((id) => id.equals(sender._id)));
@@ -34,8 +42,8 @@ exports.getConversations = catchAsync(async (req, res) => {
     if (!existing) {
       byParticipant.set(id, {
         id,
-        participant,
-        preview: message.text,
+        participant: withCurrentPresence(participant),
+        preview: message.text || (message.media?.type === 'audio' ? 'Voice message' : message.media?.type === 'image' ? 'Photo' : message.media?.type === 'video' ? 'Video' : message.media?.type === 'file' ? 'Attachment' : ''),
         unread: 0,
         updatedAt: message.createdAt,
         status,
@@ -45,7 +53,7 @@ exports.getConversations = catchAsync(async (req, res) => {
     } else {
       if (message.createdAt > existing.updatedAt) {
         existing.updatedAt = message.createdAt;
-        existing.preview = message.text;
+        existing.preview = message.text || (message.media?.type === 'audio' ? 'Voice message' : message.media?.type === 'image' ? 'Photo' : message.media?.type === 'video' ? 'Video' : message.media?.type === 'file' ? 'Attachment' : '');
       }
       // Sending a reply accepts a request, so an old incoming request must not
       // keep the whole thread trapped in the Requests folder.
@@ -69,7 +77,8 @@ exports.getConversations = catchAsync(async (req, res) => {
     username: user.username,
     displayName: user.displayName,
     profilePicture: user.profilePicture,
-    isOnline: user.isOnline,
+    isOnline: withCurrentPresence(user).isOnline,
+    lastActive: user.lastActive,
     note: user.note?.expiresAt && user.note.expiresAt > now ? user.note.text : '',
   }));
 
@@ -85,7 +94,7 @@ exports.getConversation = catchAsync(async (req, res, next) => {
   const messages = await Message.find(filter).sort({ createdAt: 1 });
   const connection = connectionFor(req.user, participant._id);
   await Message.updateMany({ sender: participant._id, receiver: req.user._id, readAt: null }, { $set: { readAt: new Date() } });
-  res.status(200).json({ success: true, participant, messages, connection: connection || {} });
+  res.status(200).json({ success: true, participant: withCurrentPresence(participant), messages, connection: connection || {} });
 });
 
 exports.sendMessage = catchAsync(async (req, res, next) => {
