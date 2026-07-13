@@ -7,11 +7,9 @@ export default function Logo({ className = '', size = 160 }) {
       style={{ '--logo-size': `${size}px` }}
     >
       <img
-        src="/logo.png"
+        src="/finallogo.png"
         alt="nearbi logo"
-        /* The source artwork includes generous transparent margins. Crop those
-           margins here so every use of the logo has a consistent visual size. */
-        className="absolute -left-[9.5%] -top-[85%] h-[250%] max-w-none"
+        className="block h-full w-full object-contain"
       />
     </div>
   );
