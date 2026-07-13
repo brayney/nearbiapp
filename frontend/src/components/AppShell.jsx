@@ -109,9 +109,9 @@ export default function AppShell() {
   return (
     <div className="flex min-h-[100dvh] bg-ink text-paper md:h-screen md:overflow-hidden">
       {/* Desktop / tablet sidebar */}
-      <aside className="hidden h-[100dvh] shrink-0 overflow-y-auto border-r border-ink-line px-2 py-6 md:flex md:flex-col md:w-[76px] lg:w-64 lg:px-4">
-        <div className="px-2 mb-8 flex items-center justify-center">
-          <Logo size={84} />
+      <aside className="hidden h-[100dvh] shrink-0 overflow-y-auto border-r border-ink-line px-2 py-4 md:flex md:flex-col md:w-24 lg:w-72 lg:px-5">
+        <div className="mb-5 flex items-center justify-center px-1 lg:mb-7">
+          <Logo size={80} className="lg:w-44" />
         </div>
 
         <nav className="flex flex-col gap-1 flex-1">
@@ -177,7 +177,7 @@ export default function AppShell() {
           <button type="button" className="absolute inset-0 bg-black/60" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu" />
           <aside className="relative flex h-full w-[min(20rem,85vw)] flex-col border-r border-ink-line bg-ink p-5 shadow-2xl">
             <div className="mb-8 flex items-center justify-between">
-                <Logo size={36} />
+                <Logo size={128} />
               <button type="button" onClick={() => setMobileMenuOpen(false)} className="rounded-xl p-2 text-slate-faint hover:bg-ink-soft hover:text-paper" aria-label="Close menu">
                 <X size={22} />
               </button>

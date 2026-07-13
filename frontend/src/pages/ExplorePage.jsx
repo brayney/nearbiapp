@@ -64,7 +64,7 @@ export default function ExplorePage() {
       <header className="sticky top-0 z-10 -mx-4 mb-6 border-b border-ink-line bg-ink/95 px-4 py-4 backdrop-blur"><h1 className="font-display text-2xl">Explore</h1></header>
 
       {loading ? (
-        <div className="grid grid-cols-3 gap-1">
+        <div className="grid grid-cols-2 gap-1 sm:grid-cols-3">
           {Array.from({ length: 9 }).map((_, i) => (
             <div key={i} className="aspect-square bg-ink-soft animate-pulse" />
           ))}
@@ -72,7 +72,7 @@ export default function ExplorePage() {
       ) : posts.length === 0 ? (
         <p className="text-slate-faint text-sm">No trending posts yet this week.</p>
       ) : (
-        <div className="grid grid-cols-3 gap-1">
+        <div className="grid grid-cols-2 gap-1 sm:grid-cols-3">
           {posts.map((post) => {
             const authorId = String(post.author?._id || '');
             const isFollowing = authorId ? followingIds.has(authorId) : false;
@@ -94,8 +94,8 @@ export default function ExplorePage() {
                   </div>
                 )}
 
-                <div className="absolute inset-0 bg-black/35 opacity-0 transition-opacity duration-200 group-hover:opacity-100 pointer-events-none" />
-                <div className="absolute inset-x-0 top-0 p-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-20">
+                <div className="pointer-events-none absolute inset-0 bg-black/35 opacity-100 transition-opacity duration-200 sm:opacity-0 sm:group-hover:opacity-100" />
+                <div className="absolute inset-x-0 top-0 z-20 p-2 opacity-100 transition-opacity duration-200 sm:p-3 sm:opacity-0 sm:group-hover:opacity-100">
                   <div className="flex items-center justify-between gap-2 rounded-2xl bg-ink/90 px-3 py-2 text-sm text-paper backdrop-blur">
                     <span className="truncate font-semibold">{post.author?.username || 'Unknown'}</span>
                     <button
@@ -114,7 +114,7 @@ export default function ExplorePage() {
                     </button>
                   </div>
                 </div>
-                <div className="absolute inset-x-0 bottom-0 p-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-20">
+                <div className="absolute inset-x-0 bottom-0 z-20 p-2 opacity-100 transition-opacity duration-200 sm:p-3 sm:opacity-0 sm:group-hover:opacity-100">
                   <div className="flex items-center justify-between gap-2 rounded-2xl bg-ink/90 px-3 py-2 text-slate-faint backdrop-blur">
                     <button
                       type="button"

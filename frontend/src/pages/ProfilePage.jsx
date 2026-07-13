@@ -28,15 +28,14 @@ export default function ProfilePage() {
   const [editData, setEditData] = useState({ displayName: '', username: '', bio: '' });
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [connections, setConnections] = useState({ type: null, users: [], loading: false });
+  const profileIds = [profile?.id, profile?._id].filter(Boolean).map(String);
+  const currentUserIds = [currentUser?.id, currentUser?._id].filter(Boolean).map(String);
   const isOwner = Boolean(
-    profile &&
-    currentUser &&
-    (
-      (profile.username || '').toLowerCase() === (currentUser.username || '').toLowerCase() ||
-      profile.id === currentUser.id ||
-      profile.id === currentUser._id ||
-      profile._id === currentUser.id ||
-      profile._id === currentUser._id
+    profile && currentUser && (
+      profileIds.some((id) => currentUserIds.includes(id)) ||
+      ((profile.username || '') &&
+        (currentUser.username || '') &&
+        profile.username.toLowerCase() === currentUser.username.toLowerCase())
     )
   );
   const menuRef = useRef(null);
@@ -191,8 +190,8 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-ink text-paper">
       <div className="mx-auto max-w-3xl px-4 pb-24">
-        <div className="pt-6">
-          <div className="flex flex-wrap items-start gap-5">
+        <div className="pt-16 sm:pt-6">
+          <div className="flex flex-col items-stretch gap-5 sm:flex-row sm:flex-wrap sm:items-start">
             <div className="relative">
               <Avatar
                 src={profile.profilePicture?.url}
@@ -208,7 +207,7 @@ export default function ProfilePage() {
               )}
             </div>
 
-            <div className="flex-1 min-w-[220px]">
+            <div className="min-w-0 flex-1 sm:min-w-[220px]">
               <div className="flex flex-wrap items-center gap-3">
                 <span className="text-2xl font-semibold tracking-tight">{profile.displayName || profile.username}</span>
                 <span className="text-sm text-slate-faint">@{profile.username}</span>
@@ -220,16 +219,16 @@ export default function ProfilePage() {
             {isOwner ? (
               <button
                 onClick={() => setEditing(true)}
-                className="min-w-[120px] rounded-2xl border border-ink-line bg-ink-soft px-4 py-2 text-sm font-semibold text-paper transition hover:bg-ink"
+                className="w-full min-w-[120px] rounded-2xl border border-ink-line bg-ink-soft px-4 py-2.5 text-sm font-semibold text-paper transition hover:bg-ink sm:w-auto"
               >
                 Edit profile
               </button>
             ) : (
-              <div className="flex flex-wrap gap-3">
+              <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
                 <button
                   onClick={handleFollowToggle}
                   disabled={followBusy}
-                  className={`min-w-[120px] rounded-2xl px-4 py-2 text-sm font-semibold transition ${
+                  className={`min-w-0 rounded-2xl px-4 py-2.5 text-sm font-semibold transition ${
                     isFollowing ? 'border border-ink-line bg-ink-soft text-paper hover:bg-ink/80' : 'bg-coral text-ink hover:bg-coral-dim'
                   }`}
                 >
@@ -237,7 +236,7 @@ export default function ProfilePage() {
                 </button>
                 <Link
                   to={`/messages?user=${profile.id || profile._id}`}
-                  className="min-w-[120px] rounded-2xl border border-ink-line bg-ink-soft px-4 py-2 text-sm font-semibold text-paper transition hover:bg-ink"
+                  className="min-w-0 rounded-2xl border border-ink-line bg-ink-soft px-4 py-2.5 text-center text-sm font-semibold text-paper transition hover:bg-ink"
                 >
                   Message
                 </Link>

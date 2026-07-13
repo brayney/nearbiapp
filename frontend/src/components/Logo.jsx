@@ -1,13 +1,17 @@
 import React from 'react';
 
-export default function Logo({ className = '', size = 96 }) {
+export default function Logo({ className = '', size = 160 }) {
   return (
-    <div className={className.trim()} style={{ width: size, height: size }}>
+    <div
+      className={`relative w-[var(--logo-size)] aspect-[2.1/1] overflow-hidden ${className}`.trim()}
+      style={{ '--logo-size': `${size}px` }}
+    >
       <img
         src="/logo.png"
         alt="nearbi logo"
-        className="block h-full w-full object-contain"
-        style={{ width: '100%', height: '100%' }}
+        /* The source artwork includes generous transparent margins. Crop those
+           margins here so every use of the logo has a consistent visual size. */
+        className="absolute -left-[9.5%] -top-[85%] h-[250%] max-w-none"
       />
     </div>
   );
