@@ -262,13 +262,22 @@ exports.toggleSave = catchAsync(async (req, res, next) => {
 });
 
 exports.sharePost = catchAsync(async (req, res, next) => {
-  const post = await Post.findByIdAndUpdate(
-    req.params.postId,
-    { $inc: { shares: 1 }, $addToSet: { sharedBy: req.user._id } },
-    { new: true }
-  );
+  const post = await Post.findById(req.params.postId);
   if (!post) return next(new ApiError(404, 'Post not found.'));
-  res.status(200).json({ success: true, shares: post.shares });
+  if (post.author.equals(req.user._id)) {
+    return next(new ApiError(403, 'You cannot repost your own post.'));
+  }
+
+  const alreadyReposted = post.sharedBy.some((userId) => userId.equals(req.user._id));
+  if (alreadyReposted) {
+    post.sharedBy = post.sharedBy.filter((userId) => !userId.equals(req.user._id));
+    post.shares = Math.max(0, post.shares - 1);
+  } else {
+    post.sharedBy.push(req.user._id);
+    post.shares += 1;
+  }
+  await post.save();
+  res.status(200).json({ success: true, shares: post.shares, reposted: !alreadyReposted });
 });
 
 exports.getUserReposts = catchAsync(async (req, res, next) => {

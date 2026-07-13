@@ -90,8 +90,8 @@ export default function PostCard({ post }) {
   const handleRepost = async () => {
     try {
       const { data } = await postsApi.sharePost(post._id);
-      setSharesCount(data.shares ?? sharesCount + 1);
-      dispatch(pushToast('Post reposted.', 'success'));
+      setSharesCount(data.shares ?? sharesCount);
+      dispatch(pushToast(data.reposted ? 'Post reposted.' : 'Repost removed.', 'success'));
     } catch (err) {
       dispatch(pushToast(err.response?.data?.message || 'Could not repost this post.', 'error'));
     }
@@ -102,7 +102,7 @@ export default function PostCard({ post }) {
       await postsApi.deletePost(post._id);
       dispatch(removePost(post._id));
       dispatch(pushToast('Post deleted.', 'success'));
-      if (location.pathname === `/post/${post._id}`) navigate('/', { replace: true });
+      if (location.pathname === `/post/${post._id}`) navigate('/feed', { replace: true });
     } catch (err) {
       dispatch(pushToast(err.response?.data?.message || 'Could not delete post.', 'error'));
     }
@@ -190,10 +190,12 @@ export default function PostCard({ post }) {
             <MessageCircle size={20} />
             <span className="font-mono text-sm">{localComments.length}</span>
           </button>
-          <button onClick={handleRepost} className="flex items-center gap-1.5 hover:text-paper" aria-label="Repost post">
-            <Repeat size={20} />
-            <span className="font-mono text-sm">{sharesCount}</span>
-          </button>
+          {!isOwner && (
+            <button onClick={handleRepost} className="flex items-center gap-1.5 hover:text-paper" aria-label="Repost post">
+              <Repeat size={20} />
+              <span className="font-mono text-sm">{sharesCount}</span>
+            </button>
+          )}
           <button onClick={handleShare} className="hover:text-paper" aria-label="Share post link">
             <Send size={20} />
           </button>
