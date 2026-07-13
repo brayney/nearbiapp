@@ -138,6 +138,15 @@ export default function AppShell() {
             <Avatar src={user?.profilePicture?.url} alt={user?.username} size="sm" />
             <span className="hidden md:block truncate text-sm font-medium">{user?.username}</span>
           </button>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex items-center justify-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-coral transition hover:bg-ink-soft lg:justify-start"
+            aria-label="Log out"
+          >
+            <LogOut size={20} />
+            <span className="hidden lg:inline">Log out</span>
+          </button>
         </div>
       </aside>
 

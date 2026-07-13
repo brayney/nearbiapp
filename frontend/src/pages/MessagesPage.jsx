@@ -142,7 +142,7 @@ export default function MessagesPage() {
     }
   };
 
-  const activeName = participant?.displayName || participant?.username || 'Conversation';
+  const activeName = connection.nickname || participant?.displayName || participant?.username || 'Conversation';
   let body = <EmptyThread />;
   if (activeUserId && threadError) body = <div className="m-auto max-w-sm px-6 text-center"><p className="font-semibold">Conversation unavailable</p><p className="mt-2 text-sm text-slate-faint">{threadError}</p></div>;
   if (activeUserId && !threadError && !participant) body = <p className="m-auto text-sm text-slate-faint">Opening conversation…</p>;
@@ -300,7 +300,7 @@ export default function MessagesPage() {
                       />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
-                          <p className="truncate text-sm font-medium text-paper">{conversation.participant?.displayName || conversation.participant?.username}</p>
+                          <p className="truncate text-sm font-medium text-paper">{conversation.nickname || conversation.participant?.displayName || conversation.participant?.username}</p>
                           {conversation.unread > 0 && <span className="inline-flex h-2.5 w-2.5 rounded-full bg-coral" />}
                         </div>
                         <p className="mt-1 truncate text-xs text-slate-faint">{conversation.preview}</p>
@@ -339,8 +339,8 @@ export default function MessagesPage() {
       )}
 
       {mailboxOpen && (
-        <div className="fixed inset-0 z-[70] flex items-end bg-black/60 sm:items-center sm:justify-center sm:p-4" role="dialog" aria-modal="true" aria-label="Message folders" onMouseDown={() => setMailboxOpen(false)}>
-          <section className="w-full max-w-md overflow-hidden rounded-t-2xl border border-ink-line bg-ink shadow-2xl sm:rounded-2xl" onMouseDown={(event) => event.stopPropagation()}>
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-3 sm:p-4" role="dialog" aria-modal="true" aria-label="Message folders" onMouseDown={() => setMailboxOpen(false)}>
+          <section className="max-h-[calc(100dvh-1.5rem)] w-full max-w-md overflow-hidden rounded-2xl border border-ink-line bg-ink shadow-2xl" onMouseDown={(event) => event.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-ink-line px-5 py-4"><h2 className="font-display text-xl">Message folders</h2><button type="button" onClick={() => setMailboxOpen(false)} className="rounded-full p-2 text-slate-faint hover:bg-ink-soft" aria-label="Close"><X size={18} /></button></div>
             <div className="flex border-b border-ink-line"><FolderTab active={mailboxView === 'requests'} onClick={() => setMailboxView('requests')}>Requests</FolderTab><FolderTab active={mailboxView === 'spam'} onClick={() => setMailboxView('spam')}>Spam</FolderTab><FolderTab active={mailboxView === 'blocked'} onClick={() => setMailboxView('blocked')}>Blocked</FolderTab></div>
             <div className="max-h-[60vh] overflow-y-auto p-2">
