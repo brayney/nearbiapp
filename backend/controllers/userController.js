@@ -183,6 +183,24 @@ exports.searchUsers = catchAsync(async (req, res, next) => {
   res.status(200).json({ success: true, users });
 });
 
+exports.getMentionSuggestions = catchAsync(async (req, res) => {
+  const query = (req.query.q || '').trim();
+  const users = await User.find({
+    _id: { $in: req.user.following || [] },
+    ...(query ? {
+      $or: [
+        { username: { $regex: query, $options: 'i' } },
+        { displayName: { $regex: query, $options: 'i' } },
+      ],
+    } : {}),
+  })
+    .sort({ username: 1 })
+    .limit(8)
+    .select('username displayName profilePicture isVerified');
+
+  res.status(200).json({ success: true, users });
+});
+
 // ---------------- LOCATION ----------------
 exports.updateLocation = catchAsync(async (req, res, next) => {
   const { longitude, latitude } = req.body;

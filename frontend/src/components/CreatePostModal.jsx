@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { X, Image as ImageIcon } from 'lucide-react';
 import { closeCreatePost } from '../features/ui/uiSlice';
 import { postCreated } from '../features/posts/postsSlice';
 import { pushToast } from '../features/ui/uiSlice';
 import { postsApi } from '../api/resources';
+import { usersApi } from '../api/resources';
+import Avatar from './Avatar';
 
 export default function CreatePostModal() {
   const isOpen = useSelector((s) => s.ui.createPostOpen);
@@ -13,6 +15,26 @@ export default function CreatePostModal() {
   const [files, setFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+  const [mention, setMention] = useState(null);
+  const [mentionUsers, setMentionUsers] = useState([]);
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    if (!isOpen || !mention) {
+      setMentionUsers([]);
+      return undefined;
+    }
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      usersApi.getMentionSuggestions(mention.query)
+        .then(({ data }) => !cancelled && setMentionUsers(data.users || []))
+        .catch(() => !cancelled && setMentionUsers([]));
+    }, 120);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [isOpen, mention]);
 
   if (!isOpen) return null;
 
@@ -26,7 +48,30 @@ export default function CreatePostModal() {
     setCaption('');
     setFiles([]);
     setPreviews([]);
+    setMention(null);
+    setMentionUsers([]);
     dispatch(closeCreatePost());
+  };
+
+  const handleCaptionChange = (event) => {
+    const value = event.target.value;
+    const cursor = event.target.selectionStart ?? value.length;
+    const match = value.slice(0, cursor).match(/(^|\s)@([a-zA-Z0-9._]*)$/);
+    setCaption(value);
+    setMention(match ? { query: match[2], start: cursor - match[2].length - 1, end: cursor } : null);
+  };
+
+  const insertMention = (user) => {
+    if (!mention) return;
+    const value = `${caption.slice(0, mention.start)}@${user.username} ${caption.slice(mention.end)}`;
+    const cursor = mention.start + user.username.length + 2;
+    setCaption(value);
+    setMention(null);
+    setMentionUsers([]);
+    requestAnimationFrame(() => {
+      textareaRef.current?.focus();
+      textareaRef.current?.setSelectionRange(cursor, cursor);
+    });
   };
 
   const handleSubmit = async () => {
@@ -62,13 +107,29 @@ export default function CreatePostModal() {
         </header>
 
         <div className="p-5 space-y-4">
-          <textarea
-            value={caption}
-            onChange={(e) => setCaption(e.target.value)}
-            placeholder="What's on your mind? Use #hashtags and @mentions"
-            rows={4}
-            className="w-full bg-transparent outline-none placeholder-slate-mute text-[15px] resize-none"
-          />
+          <div className="relative">
+            <textarea
+              ref={textareaRef}
+              value={caption}
+              onChange={handleCaptionChange}
+              onBlur={() => window.setTimeout(() => setMention(null), 150)}
+              placeholder="What's on your mind? Use #hashtags and @mentions"
+              rows={4}
+              className="w-full bg-transparent outline-none placeholder-slate-mute text-[15px] resize-none"
+              aria-autocomplete="list"
+              aria-expanded={Boolean(mention && mentionUsers.length)}
+            />
+            {mention && mentionUsers.length > 0 && (
+              <div className="absolute inset-x-0 top-full z-20 mt-2 overflow-hidden rounded-xl border border-ink-line bg-ink shadow-xl">
+                {mentionUsers.map((user) => (
+                  <button key={user._id} type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => insertMention(user)} className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition hover:bg-ink-soft">
+                    <Avatar src={user.profilePicture?.url} alt={user.username} size="sm" />
+                    <span className="min-w-0"><span className="block truncate text-sm font-semibold">{user.displayName || user.username}</span><span className="block truncate text-xs text-slate-faint">@{user.username}</span></span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           {previews.length > 0 && (
             <div className="grid grid-cols-3 gap-2">

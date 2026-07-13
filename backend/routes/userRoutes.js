@@ -7,6 +7,7 @@ const { uploadLimiter } = require('../middleware/security');
 const router = express.Router();
 
 router.get('/search', protect, userController.searchUsers);
+router.get('/mentions', protect, userController.getMentionSuggestions);
 router.get('/nearby', protect, userController.getNearbyUsers);
 
 router.patch('/me', protect, userController.updateProfile);

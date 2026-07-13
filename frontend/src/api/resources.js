@@ -42,6 +42,7 @@ export const usersApi = {
   getFollowers: (username) => api.get(`/users/${username}/followers`),
   getFollowing: (username) => api.get(`/users/${username}/following`),
   search: (q) => api.get('/users/search', { params: { q } }),
+  getMentionSuggestions: (q) => api.get('/users/mentions', { params: { q } }),
   getNearby: (radiusKm) => api.get('/users/nearby', { params: { radiusKm } }),
 };
 
