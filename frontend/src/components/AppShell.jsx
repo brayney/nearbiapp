@@ -107,7 +107,7 @@ export default function AppShell() {
   const mobileNavItems = [navItems[0], navItems[1], navItems[3], navItems[5], navItems[4]];
 
   return (
-    <div className="flex min-h-[100dvh] bg-ink text-paper md:h-screen md:overflow-hidden">
+    <div className="flex min-h-[100svh] bg-ink text-paper md:h-screen md:overflow-hidden">
       {/* Desktop / tablet sidebar */}
       <aside className="hidden h-[100dvh] shrink-0 overflow-y-auto border-r border-ink-line px-2 py-4 md:flex md:flex-col md:w-24 lg:w-72 lg:px-5">
         <div className="mb-5 flex items-center justify-center px-1 lg:mb-7">
@@ -151,7 +151,7 @@ export default function AppShell() {
       </aside>
 
       {/* Main content */}
-      <main className="flex h-[100dvh] min-w-0 flex-1 flex-col overflow-y-auto pb-[calc(5rem+env(safe-area-inset-bottom))] md:h-screen md:pb-0">
+      <main className="flex min-h-[100dvh] min-w-0 flex-1 flex-col overflow-y-auto pb-[calc(var(--mobile-nav-height)+1rem)] md:h-screen md:min-h-0 md:pb-0">
         <div className="flex-1">
           <Outlet />
         </div>
@@ -162,7 +162,7 @@ export default function AppShell() {
       {showMobileCreate && (
         <button
           onClick={() => dispatch(openCreatePost())}
-          className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-coral text-ink shadow-lg shadow-coral-glow md:hidden"
+          className="fixed bottom-[calc(var(--mobile-nav-height)+1rem)] right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-coral text-ink shadow-lg shadow-coral-glow md:hidden"
         >
           <PlusSquare size={24} strokeWidth={2} />
         </button>
@@ -224,7 +224,7 @@ export default function AppShell() {
         </div>
       )}
 
-      <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-ink-line bg-ink-soft px-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2 md:hidden">
+      <nav className="mobile-bottom-nav fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-ink-line bg-ink-soft px-2 pb-[env(safe-area-inset-bottom)] pt-2 md:hidden">
         {mobileNavItems.map((item) => (
           <NavLink
             key={item.to}
