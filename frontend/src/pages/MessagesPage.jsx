@@ -133,19 +133,42 @@ export default function MessagesPage() {
     }
   };
 
-  const handleSend = (event) => {
+  const handleSend = async (event) => {
     event.preventDefault();
     if (recordingVoice) {
-      // Send is the natural finish action on mobile: stop recording first,
-      // then upload as soon as MediaRecorder produces the final audio blob.
+      // Stop recording first, then upload as soon as MediaRecorder produces the final audio blob.
       sendVoiceWhenReadyRef.current = true;
-      stopVoiceRecording();
+      await stopVoiceRecording();
       return;
     }
     const text = draft.trim();
     if ((!text && !mediaFile) || !activeUserId) return;
     setDraft('');
     sendMessage(text, mediaFile);
+  };
+
+  const finalizeVoiceRecording = async () => {
+    const currentRecorder = recorderRef.current;
+    const type = currentRecorder?.mimeType || 'audio/webm';
+    const extension = type.includes('mp4') ? 'm4a' : type.includes('webm') ? 'webm' : 'ogg';
+    const recording = new File([new Blob(audioChunksRef.current, { type })], `voice-message-${Date.now()}.${extension}`, { type });
+
+    recorderRef.current = null;
+    setRecordingVoice(false);
+    setVoiceLevels(Array(22).fill(0.14));
+
+    if (recording.size > 0) {
+      setMediaFile(recording);
+      if (sendVoiceWhenReadyRef.current) {
+        sendVoiceWhenReadyRef.current = false;
+        await sendMessage('', recording);
+      }
+    } else if (sendVoiceWhenReadyRef.current) {
+      sendVoiceWhenReadyRef.current = false;
+      dispatch(pushToast('No audio was recorded. Please try again.', 'error'));
+    }
+
+    releaseVoiceResources();
   };
 
   const startVoiceRecording = async () => {
@@ -183,23 +206,7 @@ export default function MessagesPage() {
         if (event.data.size > 0) audioChunksRef.current.push(event.data);
       };
       recorder.onstop = () => {
-        const type = recorder.mimeType || 'audio/webm';
-        const extension = type.includes('mp4') ? 'm4a' : 'webm';
-        const recording = new File([new Blob(audioChunksRef.current, { type })], `voice-message-${Date.now()}.${extension}`, { type });
-        if (recording.size > 0) {
-          setMediaFile(recording);
-          if (sendVoiceWhenReadyRef.current) {
-            sendVoiceWhenReadyRef.current = false;
-            sendMessage('', recording);
-          }
-        } else if (sendVoiceWhenReadyRef.current) {
-          sendVoiceWhenReadyRef.current = false;
-          dispatch(pushToast('No audio was recorded. Please try again.', 'error'));
-        }
-        recorderRef.current = null;
-        setRecordingVoice(false);
-        setVoiceLevels(Array(22).fill(0.14));
-        releaseVoiceResources();
+        finalizeVoiceRecording();
       };
       recorder.start();
       recorderRef.current = recorder;
@@ -209,13 +216,16 @@ export default function MessagesPage() {
     }
   };
 
-  const stopVoiceRecording = () => {
+  const stopVoiceRecording = async () => {
     const recorder = recorderRef.current;
-    if (recorder?.state === 'recording') recorder.stop();
-    else releaseVoiceResources();
+    if (recorder?.state === 'recording') {
+      recorder.stop();
+      return;
+    }
+
     setRecordingVoice(false);
     setVoiceLevels(Array(22).fill(0.14));
-    releaseVoiceResources(false);
+    await finalizeVoiceRecording();
   };
 
   const updateConnection = async (payload, successMessage) => {
