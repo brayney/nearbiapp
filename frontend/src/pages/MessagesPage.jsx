@@ -53,7 +53,6 @@ export default function MessagesPage() {
   const recorderStopPromiseRef = useRef(null);
   const recorderStopResolveRef = useRef(null);
   const voiceFinalizeTimeoutRef = useRef(null);
-  const voiceFinalizeTimeoutRef = useRef(null);
 
   const loadConversations = async () => {
     const { data } = await messagesApi.getConversations();
