@@ -243,7 +243,10 @@ exports.addReply = catchAsync(async (req, res, next) => {
     message: `${req.user.username} replied to your comment.`,
   });
 
-  res.status(201).json({ success: true, replies: comment.replies });
+  // populate reply user info so the client receives username/profilePicture
+  await post.populate('comments.replies.user', 'username displayName profilePicture');
+  const populatedComment = post.comments.id(req.params.commentId);
+  res.status(201).json({ success: true, replies: populatedComment.replies });
 });
 
 exports.toggleSave = catchAsync(async (req, res, next) => {
