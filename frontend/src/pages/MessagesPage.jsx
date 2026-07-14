@@ -52,7 +52,8 @@ export default function MessagesPage() {
   const sendVoiceWhenReadyRef = useRef(false);
   const recorderStopPromiseRef = useRef(null);
   const recorderStopResolveRef = useRef(null);
-  const voiceFinalizeTimeoutRef = useRef(null);
+  const voiceFinalizationPromiseRef = useRef(null);
+  const voiceFinalizationResolveRef = useRef(null);
 
   const loadConversations = async () => {
     const { data } = await messagesApi.getConversations();
@@ -136,14 +137,22 @@ export default function MessagesPage() {
     }
   };
 
+  const waitForVoiceFinalization = async () => {
+    if (voiceFinalizationPromiseRef.current) {
+      await voiceFinalizationPromiseRef.current;
+    }
+  };
+
   const handleSend = async (event) => {
     event.preventDefault();
     if (recordingVoice) {
-      // Stop recording first, then upload as soon as MediaRecorder produces the final audio blob.
       sendVoiceWhenReadyRef.current = true;
       await stopVoiceRecording();
       return;
     }
+
+    await waitForVoiceFinalization();
+
     const text = draft.trim();
     if ((!text && !mediaFile) || !activeUserId) return;
     setDraft('');
@@ -151,11 +160,6 @@ export default function MessagesPage() {
   };
 
   const finalizeVoiceRecording = async () => {
-    if (voiceFinalizeTimeoutRef.current) {
-      clearTimeout(voiceFinalizeTimeoutRef.current);
-      voiceFinalizeTimeoutRef.current = null;
-    }
-
     const currentRecorder = recorderRef.current;
     const type = currentRecorder?.mimeType || 'audio/webm';
     const extension = type.includes('mp4') ? 'm4a' : type.includes('webm') ? 'webm' : 'ogg';
@@ -177,6 +181,12 @@ export default function MessagesPage() {
     }
 
     releaseVoiceResources();
+
+    if (voiceFinalizationResolveRef.current) {
+      voiceFinalizationResolveRef.current();
+      voiceFinalizationResolveRef.current = null;
+      voiceFinalizationPromiseRef.current = null;
+    }
   };
 
   const startVoiceRecording = async () => {
@@ -218,9 +228,12 @@ export default function MessagesPage() {
           recorderStopResolveRef.current();
           recorderStopResolveRef.current = null;
         }
-        voiceFinalizeTimeoutRef.current = window.setTimeout(() => {
-          finalizeVoiceRecording();
-        }, 120);
+
+        voiceFinalizationPromiseRef.current = new Promise((resolve) => {
+          voiceFinalizationResolveRef.current = resolve;
+        });
+
+        finalizeVoiceRecording();
       };
       recorderStopPromiseRef.current = new Promise((resolve) => {
         recorderStopResolveRef.current = resolve;
