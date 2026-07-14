@@ -50,6 +50,9 @@ export default function MessagesPage() {
   const audioContextRef = useRef(null);
   const animationFrameRef = useRef(null);
   const sendVoiceWhenReadyRef = useRef(false);
+  const recorderStopPromiseRef = useRef(null);
+  const recorderStopResolveRef = useRef(null);
+  const voiceFinalizeTimeoutRef = useRef(null);
   const voiceFinalizeTimeoutRef = useRef(null);
 
   const loadConversations = async () => {
@@ -212,10 +215,17 @@ export default function MessagesPage() {
         if (event.data.size > 0) audioChunksRef.current.push(event.data);
       };
       recorder.onstop = () => {
+        if (recorderStopResolveRef.current) {
+          recorderStopResolveRef.current();
+          recorderStopResolveRef.current = null;
+        }
         voiceFinalizeTimeoutRef.current = window.setTimeout(() => {
           finalizeVoiceRecording();
         }, 120);
       };
+      recorderStopPromiseRef.current = new Promise((resolve) => {
+        recorderStopResolveRef.current = resolve;
+      });
       recorder.start();
       recorderRef.current = recorder;
       setRecordingVoice(true);
@@ -233,6 +243,12 @@ export default function MessagesPage() {
         // Some browsers do not expose requestData; continue with stop.
       }
       recorder.stop();
+      if (recorderStopPromiseRef.current) await recorderStopPromiseRef.current;
+      return;
+    }
+
+    if (recorder && recorder.state === 'inactive') {
+      if (recorderStopPromiseRef.current) await recorderStopPromiseRef.current;
       return;
     }
 
