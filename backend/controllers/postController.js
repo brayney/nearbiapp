@@ -76,7 +76,8 @@ exports.getFeed = catchAsync(async (req, res, next) => {
     .limit(limit)
     .populate('author', 'username displayName profilePicture isVerified')
     .populate('mentions', 'username')
-    .populate('comments.user', 'username displayName profilePicture');
+    .populate('comments.user', 'username displayName profilePicture')
+    .populate('comments.replies.user', 'username displayName profilePicture');
 
   const decoratedPosts = posts.map((post) => {
     const item = post.toObject();
@@ -101,7 +102,11 @@ exports.getTrending = catchAsync(async (req, res, next) => {
     { $sort: { score: -1 } },
     { $limit: 30 },
   ]);
-  await Post.populate(posts, { path: 'author', select: 'username displayName profilePicture isVerified' });
+  await Post.populate(posts, [
+    { path: 'author', select: 'username displayName profilePicture isVerified' },
+    { path: 'comments.user', select: 'username displayName profilePicture' },
+    { path: 'comments.replies.user', select: 'username displayName profilePicture' },
+  ]);
   const followingIds = req.user?.following?.map((id) => String(id)) || [];
   const followerIds = req.user?.followers?.map((id) => String(id)) || [];
   const decoratedPosts = posts.map((post) => {
@@ -289,7 +294,9 @@ exports.getUserReposts = catchAsync(async (req, res, next) => {
 
   const posts = await Post.find({ sharedBy: user._id, isArchived: false, isRemoved: false })
     .sort({ createdAt: -1 })
-    .populate('author', 'username displayName profilePicture isVerified');
+    .populate('author', 'username displayName profilePicture isVerified')
+    .populate('comments.user', 'username displayName profilePicture')
+    .populate('comments.replies.user', 'username displayName profilePicture');
 
   res.status(200).json({ success: true, posts });
 });
@@ -347,7 +354,9 @@ exports.getUserPosts = catchAsync(async (req, res, next) => {
 
   const posts = await Post.find({ author: user._id, isArchived: false, isRemoved: false })
     .sort({ isPinned: -1, createdAt: -1 })
-    .populate('author', 'username displayName profilePicture isVerified');
+    .populate('author', 'username displayName profilePicture isVerified')
+    .populate('comments.user', 'username displayName profilePicture')
+    .populate('comments.replies.user', 'username displayName profilePicture');
 
   res.status(200).json({ success: true, posts });
 });

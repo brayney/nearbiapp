@@ -18,6 +18,7 @@ export default function PostCard({ post }) {
   const [commentText, setCommentText] = useState('');
   const [replyDrafts, setReplyDrafts] = useState({});
   const [replyingTo, setReplyingTo] = useState(null);
+  const [replyTo, setReplyTo] = useState(null);
   const [showComments, setShowComments] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [liked, setLiked] = useState(false);
@@ -37,6 +38,10 @@ export default function PostCard({ post }) {
     setSaved(Boolean(post._saved ?? post.savedBy?.some((id) => String(id) === String(currentUserId))));
     setLikesCount(post.likesCount ?? post.likes?.length ?? 0);
   }, [post, currentUserId]);
+
+  useEffect(() => {
+    setLocalComments(post.comments || []);
+  }, [post.comments]);
 
   useEffect(() => {
     setActiveMediaIndex(0);
@@ -208,42 +213,81 @@ export default function PostCard({ post }) {
             {localComments.map((comment) => (
               <div key={comment._id} className="space-y-3 rounded-2xl bg-ink-soft p-3">
                 <div className="flex items-start gap-2">
-                  <Avatar src={comment.user?.profilePicture?.url} alt={comment.user?.username} size="sm" />
+                  <Avatar
+                    src={comment.user?.profilePicture?.url}
+                    alt={comment.user?.displayName || comment.user?.username || 'Unknown'}
+                    size="sm"
+                  />
                   <div className="min-w-0">
-                    <p className="text-sm"><span className="mr-2 font-semibold">{comment.user?.username}</span>{comment.text}</p>
+                    <p className="text-sm"><span className="mr-2 font-semibold">{comment.user?.username || comment.user?.displayName || 'Unknown'}</span>{comment.text}</p>
                     <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-faint">
                       {comment.createdAt && <span>{timeAgo(comment.createdAt)}</span>}
-                      <button type="button" onClick={() => setReplyingTo((current) => (current === comment._id ? null : comment._id))} className="hover:text-paper">Reply</button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (replyingTo === comment._id) {
+                            setReplyingTo(null);
+                            setReplyTo(null);
+                          } else {
+                            setReplyingTo(comment._id);
+                            setReplyTo(comment.user?.username || null);
+                          }
+                        }}
+                        className="hover:text-paper"
+                      >
+                        Reply
+                      </button>
                     </div>
                     {comment.replies?.length > 0 && (
                       <div className="mt-3 space-y-2 rounded-2xl bg-ink border border-ink-line p-3">
                         {comment.replies.map((reply) => (
-                          <div key={reply._id} className="flex items-start gap-2 text-sm">
-                            <Avatar src={reply.user?.profilePicture?.url} alt={reply.user?.username} size="xs" />
-                            <div className="min-w-0">
-                              <p><span className="mr-2 font-semibold">{reply.user?.username}</span>{reply.text}</p>
-                              {reply.createdAt && <p className="text-xs text-slate-faint">{timeAgo(reply.createdAt)}</p>}
+                          <div key={reply._id} className="space-y-1 rounded-2xl bg-ink border border-ink-line p-3 text-sm">
+                            <div className="flex items-start gap-2">
+                              <Avatar
+                                src={reply.user?.profilePicture?.url}
+                                alt={reply.user?.displayName || reply.user?.username || 'Unknown'}
+                                size="xs"
+                              />
+                              <div className="min-w-0">
+                                <p><span className="mr-2 font-semibold">{reply.user?.username || reply.user?.displayName || 'Unknown'}</span>{reply.text}</p>
+                                <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-slate-faint">
+                                  {reply.createdAt && <span>{timeAgo(reply.createdAt)}</span>}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setReplyingTo(comment._id);
+                                      setReplyTo(reply.user?.username || null);
+                                    }}
+                                    className="hover:text-paper"
+                                  >
+                                    Reply
+                                  </button>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         ))}
                       </div>
                     )}
                     {replyingTo === comment._id && (
-                      <form onSubmit={(event) => { event.preventDefault(); handleReply(comment._id); }} className="mt-3 flex items-center gap-2">
-                        <input
-                          value={replyDrafts[comment._id] || ''}
-                          onChange={(event) => setReplyDrafts((current) => ({ ...current, [comment._id]: event.target.value }))}
-                          className="flex-1 rounded-2xl border border-ink-line bg-transparent px-3 py-2 text-sm outline-none focus:border-coral"
-                          placeholder="Write a reply..."
-                        />
-                        <button
-                          type="submit"
-                          disabled={!replyDrafts[comment._id]?.trim()}
-                          className="rounded-full bg-coral px-4 py-2 text-sm font-semibold text-ink disabled:opacity-50"
-                        >
-                          Send
-                        </button>
-                      </form>
+                      <div className="mt-3 space-y-2">
+                        {replyTo && <div className="text-xs text-slate-faint">Replying to @{replyTo}</div>}
+                        <form onSubmit={(event) => { event.preventDefault(); handleReply(comment._id); }} className="flex items-center gap-2">
+                          <input
+                            value={replyDrafts[comment._id] || ''}
+                            onChange={(event) => setReplyDrafts((current) => ({ ...current, [comment._id]: event.target.value }))}
+                            className="flex-1 rounded-2xl border border-ink-line bg-transparent px-3 py-2 text-sm outline-none focus:border-coral"
+                            placeholder="Write a reply..."
+                          />
+                          <button
+                            type="submit"
+                            disabled={!replyDrafts[comment._id]?.trim()}
+                            className="rounded-full bg-coral px-4 py-2 text-sm font-semibold text-ink disabled:opacity-50"
+                          >
+                            Send
+                          </button>
+                        </form>
+                      </div>
                     )}
                   </div>
                 </div>
