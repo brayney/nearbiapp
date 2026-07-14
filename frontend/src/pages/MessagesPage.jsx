@@ -219,6 +219,11 @@ export default function MessagesPage() {
   const stopVoiceRecording = async () => {
     const recorder = recorderRef.current;
     if (recorder?.state === 'recording') {
+      try {
+        recorder.requestData();
+      } catch (err) {
+        // Some browsers do not expose requestData; continue with stop.
+      }
       recorder.stop();
       return;
     }
