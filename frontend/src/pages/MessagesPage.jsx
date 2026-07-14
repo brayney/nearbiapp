@@ -50,6 +50,7 @@ export default function MessagesPage() {
   const audioContextRef = useRef(null);
   const animationFrameRef = useRef(null);
   const sendVoiceWhenReadyRef = useRef(false);
+  const voiceFinalizeTimeoutRef = useRef(null);
 
   const loadConversations = async () => {
     const { data } = await messagesApi.getConversations();
@@ -148,6 +149,11 @@ export default function MessagesPage() {
   };
 
   const finalizeVoiceRecording = async () => {
+    if (voiceFinalizeTimeoutRef.current) {
+      clearTimeout(voiceFinalizeTimeoutRef.current);
+      voiceFinalizeTimeoutRef.current = null;
+    }
+
     const currentRecorder = recorderRef.current;
     const type = currentRecorder?.mimeType || 'audio/webm';
     const extension = type.includes('mp4') ? 'm4a' : type.includes('webm') ? 'webm' : 'ogg';
@@ -206,7 +212,9 @@ export default function MessagesPage() {
         if (event.data.size > 0) audioChunksRef.current.push(event.data);
       };
       recorder.onstop = () => {
-        finalizeVoiceRecording();
+        voiceFinalizeTimeoutRef.current = window.setTimeout(() => {
+          finalizeVoiceRecording();
+        }, 120);
       };
       recorder.start();
       recorderRef.current = recorder;
