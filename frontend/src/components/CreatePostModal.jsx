@@ -45,9 +45,9 @@ export default function CreatePostModal() {
     if (!selected.length) return;
 
     const nextFiles = [...files, ...selected].slice(0, MAX_MEDIA_FILES);
-    const nextPreviews = nextFiles.map((file) => {
-      const preview = previews[files.findIndex((item) => item === file)] || URL.createObjectURL(file);
-      return preview;
+    const nextPreviews = nextFiles.map((file, index) => {
+      if (index < files.length) return previews[index];
+      return URL.createObjectURL(file);
     });
 
     setFiles(nextFiles);
@@ -55,8 +55,20 @@ export default function CreatePostModal() {
     event.target.value = '';
   };
 
+  const removeFile = (index) => {
+    const removedPreview = previews[index];
+    if (removedPreview?.startsWith('blob:')) URL.revokeObjectURL(removedPreview);
+
+    const nextFiles = files.filter((_, itemIndex) => itemIndex !== index);
+    const nextPreviews = previews.filter((_, itemIndex) => itemIndex !== index);
+    setFiles(nextFiles);
+    setPreviews(nextPreviews);
+  };
+
   const handleClose = () => {
-    previews.forEach((preview) => URL.revokeObjectURL(preview));
+    previews.forEach((preview) => {
+      if (preview?.startsWith('blob:')) URL.revokeObjectURL(preview);
+    });
     setCaption('');
     setFiles([]);
     setPreviews([]);
@@ -150,10 +162,26 @@ export default function CreatePostModal() {
           </div>
 
           {previews.length > 0 && (
-            <div className="grid grid-cols-3 gap-2">
-              {previews.map((src, i) => (
-                <img key={i} src={src} alt="" className="w-full h-24 object-cover rounded-lg" />
-              ))}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs text-slate-faint">
+                <span>{previews.length} selected</span>
+                <span>Up to {MAX_MEDIA_FILES}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {previews.map((src, i) => (
+                  <div key={`${src}-${i}`} className="relative aspect-[4/5] overflow-hidden rounded-lg border border-ink-line bg-ink-soft">
+                    <img src={src} alt="" className="h-full w-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeFile(i)}
+                      className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-ink text-paper shadow-lg"
+                      aria-label="Remove selected media"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
