@@ -16,7 +16,7 @@ router.get('/saved', postController.getSavedPosts);
 router.get('/user/:username', postController.getUserPosts);
 router.get('/user/:username/reposts', postController.getUserReposts);
 
-router.post('/', uploadLimiter, upload.array('media', 10), postController.createPost);
+router.post('/', uploadLimiter, upload.array('media', 12), postController.createPost);
 
 router.get('/:postId', postController.getPost);
 router.patch('/:postId', postController.updatePost);

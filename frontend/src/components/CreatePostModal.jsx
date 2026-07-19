@@ -8,7 +8,7 @@ import { postsApi } from '../api/resources';
 import { usersApi } from '../api/resources';
 import Avatar from './Avatar';
 
-const MAX_MEDIA_FILES = 10;
+const MAX_MEDIA_FILES = 12;
 
 export default function CreatePostModal() {
   const isOpen = useSelector((s) => s.ui.createPostOpen);

@@ -71,7 +71,7 @@ function fileFilter(req, file, cb) {
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 100 * 1024 * 1024, files: 10 }, // 100MB per file, max 10 files
+  limits: { fileSize: 100 * 1024 * 1024, files: 12 }, // 100MB per file, max 12 files
 });
 
 function normalizeUploadedFile(file) {
