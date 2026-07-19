@@ -8,6 +8,8 @@ import { postsApi } from '../api/resources';
 import { usersApi } from '../api/resources';
 import Avatar from './Avatar';
 
+const MAX_MEDIA_FILES = 10;
+
 export default function CreatePostModal() {
   const isOpen = useSelector((s) => s.ui.createPostOpen);
   const dispatch = useDispatch();
@@ -38,13 +40,23 @@ export default function CreatePostModal() {
 
   if (!isOpen) return null;
 
-  const handleFiles = (e) => {
-    const selected = Array.from(e.target.files || []);
-    setFiles(selected);
-    setPreviews(selected.map((f) => URL.createObjectURL(f)));
+  const handleFiles = (event) => {
+    const selected = Array.from(event.target.files || []);
+    if (!selected.length) return;
+
+    const nextFiles = [...files, ...selected].slice(0, MAX_MEDIA_FILES);
+    const nextPreviews = nextFiles.map((file) => {
+      const preview = previews[files.findIndex((item) => item === file)] || URL.createObjectURL(file);
+      return preview;
+    });
+
+    setFiles(nextFiles);
+    setPreviews(nextPreviews);
+    event.target.value = '';
   };
 
   const handleClose = () => {
+    previews.forEach((preview) => URL.revokeObjectURL(preview));
     setCaption('');
     setFiles([]);
     setPreviews([]);
@@ -79,11 +91,17 @@ export default function CreatePostModal() {
       dispatch(pushToast('Add a caption or media to post', 'error'));
       return;
     }
+
+    if (files.length > MAX_MEDIA_FILES) {
+      dispatch(pushToast(`You can attach up to ${MAX_MEDIA_FILES} media items.`, 'error'));
+      return;
+    }
+
     setSubmitting(true);
     try {
       const formData = new FormData();
       formData.append('caption', caption);
-      files.forEach((f) => formData.append('media', f));
+      files.forEach((file) => formData.append('media', file));
 
       const { data } = await postsApi.createPost(formData);
       dispatch(postCreated(data.post));
@@ -148,6 +166,7 @@ export default function CreatePostModal() {
 
         <footer className="px-5 py-4 border-t border-ink-line flex justify-end">
           <button
+            type="button"
             onClick={handleSubmit}
             disabled={submitting}
             className="bg-coral text-ink font-semibold px-5 py-2 rounded-xl hover:bg-coral-dim disabled:opacity-50 transition-colors"
