@@ -336,23 +336,31 @@ export default function MessagesPage() {
           const own = String(message.sender) === String(currentUser?.id || currentUser?._id);
           const isExpanded = expandedMessageId === message._id;
           const sender = own ? currentUser : participant;
+          const seen = Boolean(own && message.readAt);
           return (
             <div key={message._id} className={`flex items-end gap-2 ${own ? 'justify-end' : 'justify-start'}`}>
               {!own && <Avatar src={sender?.profilePicture?.url} alt={sender?.username} size="xs" />}
               <div className="max-w-[80%]">
-              <div onClick={() => setExpandedMessageId((current) => current === message._id ? null : message._id)} className={`cursor-pointer rounded-[22px] px-4 py-3 text-sm leading-5 shadow-sm ${own ? 'bg-coral text-ink' : 'bg-[#202020] text-paper'}`}>
-                {message.media?.url && (message.media.type === 'video' ? (
-                  <video src={message.media.url} controls className="mb-2 max-h-72 w-full rounded-xl" />
-                ) : message.media.type === 'audio' ? (
-                  <audio src={message.media.url} controls className="mb-1 w-full min-w-[13rem]" aria-label="Voice message" />
-                ) : message.media.type === 'file' ? (
-                  <a href={message.media.url} target="_blank" rel="noreferrer" className="mb-2 flex items-center gap-2 rounded-xl bg-black/15 px-3 py-2 font-medium underline"><File size={16} />Open attachment</a>
-                ) : (
-                  <img src={message.media.url} alt="Message attachment" className="mb-2 h-auto max-h-72 w-full rounded-xl object-cover" />
-                ))}
-                {message.text && <p className="break-words">{message.text}</p>}
-              </div>
-              {isExpanded && <p className={`mt-1 px-2 text-[10px] ${own ? 'text-right text-slate-faint' : 'text-slate-faint'}`}>{formatTime(message.createdAt)}</p>}
+                <div onClick={() => setExpandedMessageId((current) => current === message._id ? null : message._id)} className={`cursor-pointer rounded-[22px] px-4 py-3 text-sm leading-5 shadow-sm ${own ? 'bg-coral text-ink' : 'bg-[#202020] text-paper'}`}>
+                  {message.media?.url && (message.media.type === 'video' ? (
+                    <video src={message.media.url} controls className="mb-2 max-h-72 w-full rounded-xl" />
+                  ) : message.media.type === 'audio' ? (
+                    <audio src={message.media.url} controls className="mb-1 w-full min-w-[13rem]" aria-label="Voice message" />
+                  ) : message.media.type === 'file' ? (
+                    <a href={message.media.url} target="_blank" rel="noreferrer" className="mb-2 flex items-center gap-2 rounded-xl bg-black/15 px-3 py-2 font-medium underline"><File size={16} />Open attachment</a>
+                  ) : (
+                    <img src={message.media.url} alt="Message attachment" className="mb-2 h-auto max-h-72 w-full rounded-xl object-cover" />
+                  ))}
+                  {message.text && <p className="break-words">{message.text}</p>}
+                </div>
+                {isExpanded && <p className={`mt-1 px-2 text-[10px] ${own ? 'text-right text-slate-faint' : 'text-slate-faint'}`}>{formatTime(message.createdAt)}</p>}
+                {seen && (
+                  <div className="mt-1 flex justify-end">
+                    <div className="h-4 w-4 overflow-hidden rounded-full border border-ink bg-ink-soft">
+                      <Avatar src={participant?.profilePicture?.url} alt={participant?.username} size="xs" />
+                    </div>
+                  </div>
+                )}
               </div>
               {own && <Avatar src={sender?.profilePicture?.url} alt={sender?.username} size="xs" />}
             </div>
