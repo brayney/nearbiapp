@@ -25,6 +25,9 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   const requestUrl = new URL(event.request.url);
+  const isSupportedScheme = requestUrl.protocol === 'http:' || requestUrl.protocol === 'https:';
+  if (!isSupportedScheme) return;
+
   const isApiRequest = requestUrl.pathname.startsWith('/api/');
   const isNavigationRequest = event.request.mode === 'navigate' ||
     (event.request.headers.get('accept') || '').includes('text/html');
@@ -39,7 +42,7 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => (isNavigationRequest ? caches.match('/index.html') : new Response(null, { status: 503 })) )
+        .catch(() => (isNavigationRequest ? caches.match('/index.html') : new Response(null, { status: 503 })))
     );
     return;
   }

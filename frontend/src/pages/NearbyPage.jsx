@@ -6,7 +6,7 @@ import { Radar } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import Avatar from '../components/Avatar';
 import { usersApi } from '../api/resources';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { pushToast } from '../features/ui/uiSlice';
 
 const RADIUS_OPTIONS = [1, 5, 10, 50];
