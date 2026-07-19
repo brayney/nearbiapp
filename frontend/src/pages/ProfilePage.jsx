@@ -205,7 +205,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => navigate('/feed?story=compose')}
-                  className="absolute -right-1 top-0 z-10 flex h-9 w-9 items-center justify-center rounded-full border-2 border-ink bg-coral text-ink transition hover:bg-coral-dim"
+                  className="absolute -bottom-1 -right-1 z-10 flex h-9 w-9 items-center justify-center rounded-full border-2 border-ink bg-coral text-ink transition hover:bg-coral-dim"
                   aria-label="Add to your story"
                 >
                   <Plus size={16} />
