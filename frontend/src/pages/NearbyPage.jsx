@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CircleMarker, MapContainer, Popup, TileLayer, Tooltip, useMap } from 'react-leaflet';
+import { MapContainer, Marker, Popup, TileLayer, Tooltip, useMap } from 'react-leaflet';
+import { divIcon } from 'leaflet';
 import { Radar } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import Avatar from '../components/Avatar';
@@ -40,6 +41,7 @@ export default function NearbyPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [myLocation, setMyLocation] = useState(null);
+  const currentUser = useSelector((state) => state.auth.user);
 
   const loadNearby = async (nextRadius = radius) => {
     setLoading(true);
@@ -141,7 +143,7 @@ export default function NearbyPage() {
               </button>
             ))}
           </div>
-          <NearbyMap users={users} me={myLocation} />
+          <NearbyMap users={users} me={myLocation} meAvatar={currentUser?.profilePicture?.url} />
           <div className="mt-6">
             {loading ? <p className="text-sm text-slate-faint">Finding people nearby…</p> : users.length === 0 ? (
               <p className="text-sm text-slate-faint">No location-sharing accounts are within {radius}km. Accounts must select Location sharing and choose who can see them in Privacy settings.</p>
@@ -166,34 +168,50 @@ function LocationPrompt({ onAllow, onDeny }) {
   return <div className="rounded-2xl border border-ink-line bg-ink-soft p-6 text-center"><p className="mb-2 font-display text-lg">Allow this application to access your location?</p><p className="mb-5 text-sm text-slate-faint">See people nearby and share your own presence. You can change this anytime in Settings → Privacy.</p><div className="flex justify-center gap-3"><button onClick={onAllow} className="rounded-xl bg-coral px-5 py-2 font-semibold text-ink">Allow</button><button onClick={onDeny} className="rounded-xl border border-ink-line px-5 py-2 hover:bg-ink">Deny</button></div></div>;
 }
 
-function NearbyMap({ users, me }) {
+function NearbyMap({ users, me, meAvatar }) {
   const center = me ? [me.latitude, me.longitude] : PHILIPPINES_CENTER;
   const mappableUsers = users.filter((user) => hasCoordinates(user.location));
+
+  const createAvatarIcon = (url, isMe = false) => {
+    const borderColor = isMe ? '#ff5a5f' : '#137c8b';
+    const borderWidth = isMe ? 3 : 2;
+    const html = `
+      <div style="width:36px;height:36px;border-radius:50%;border:${borderWidth}px solid ${borderColor};overflow:hidden;background:#222;">
+        <img src="${url || ''}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'" />
+      </div>
+    `;
+    return divIcon({
+      html,
+      className: 'avatar-map-marker',
+      iconSize: [36, 36],
+      iconAnchor: [18, 18],
+    });
+  };
 
   return (
     <div className="h-[280px] overflow-hidden rounded-2xl border border-ink-line shadow-inner sm:h-[360px]">
       <MapContainer center={center} zoom={13} scrollWheelZoom className="h-full w-full" aria-label="Interactive nearby users map">
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         />
         <RecenterMap center={center} />
         {me && (
-          <CircleMarker center={[me.latitude, me.longitude]} radius={10} pathOptions={{ color: '#ffffff', weight: 3, fillColor: '#ff5a5f', fillOpacity: 1 }}>
-            <Tooltip permanent direction="top" offset={[0, -10]}>You</Tooltip>
-          </CircleMarker>
+          <Marker position={[me.latitude, me.longitude]} icon={createAvatarIcon(meAvatar, true)}>
+            <Tooltip permanent direction="top" offset={[0, -20]}>You</Tooltip>
+          </Marker>
         )}
         {mappableUsers.map((user) => {
           const [longitude, latitude] = user.location.coordinates;
           return (
-            <CircleMarker key={user._id} center={[latitude, longitude]} radius={9} pathOptions={{ color: '#ffffff', weight: 2, fillColor: '#137c8b', fillOpacity: 1 }}>
+            <Marker key={user._id} position={[latitude, longitude]} icon={createAvatarIcon(user.profilePicture?.url, false)}>
               <Popup>
                 <Link to={`/profile/${user.username}`} className="flex items-center gap-2 text-slate-900">
                   <Avatar src={user.profilePicture?.url} alt={user.username} size="sm" />
                   <span><strong className="block">{user.displayName || user.username}</strong><span>@{user.username}</span></span>
                 </Link>
               </Popup>
-            </CircleMarker>
+            </Marker>
           );
         })}
       </MapContainer>
