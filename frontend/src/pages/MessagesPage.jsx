@@ -353,12 +353,14 @@ export default function MessagesPage() {
                   ))}
                   {message.text && <p className="break-words">{message.text}</p>}
                 </div>
-                {isExpanded && <p className={`mt-1 px-2 text-[10px] ${own ? 'text-right text-slate-faint' : 'text-slate-faint'}`}>{formatTime(message.createdAt)}</p>}
-                {seen && (
-                  <div className="mt-1 flex justify-end">
-                    <div className="h-4 w-4 overflow-hidden rounded-full border border-ink bg-ink-soft">
-                      <Avatar src={participant?.profilePicture?.url} alt={participant?.username} size="xs" />
-                    </div>
+                {isExpanded && (
+                  <div className={`mt-1 flex ${own ? 'justify-end' : 'justify-start'}`}>
+                    <p className={`px-2 text-[10px] ${own ? 'text-right text-slate-faint' : 'text-slate-faint'}`}>{formatTime(message.createdAt)}</p>
+                    {own && seen && (
+                      <div className="ml-1 h-4 w-4 overflow-hidden rounded-full border border-ink bg-ink-soft">
+                        <Avatar src={participant?.profilePicture?.url} alt={participant?.username} size="xs" />
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
