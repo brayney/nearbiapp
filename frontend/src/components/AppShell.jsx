@@ -104,6 +104,7 @@ export default function AppShell() {
 
   const showMobileCreate = ['/feed', '/explore'].includes(location.pathname);
   const showBurger = location.pathname === '/feed';
+  const isMessagesRoute = location.pathname === '/messages';
   const mobileNavItems = [navItems[0], navItems[1], navItems[3], navItems[5], navItems[4]];
 
   return (
@@ -151,8 +152,8 @@ export default function AppShell() {
       </aside>
 
       {/* Main content */}
-      <main className="flex min-h-[100dvh] min-w-0 flex-1 flex-col overflow-y-auto pb-[calc(var(--mobile-nav-height)+1rem)] md:h-screen md:min-h-0 md:pb-0">
-        <div className="flex-1">
+      <main className={`flex min-h-[100dvh] min-w-0 flex-1 flex-col ${isMessagesRoute ? 'overflow-hidden' : 'overflow-y-auto'} pb-[calc(var(--mobile-nav-height)+1rem)] md:h-screen md:min-h-0 md:pb-0`}>
+        <div className="flex-1 min-h-0">
           <Outlet />
         </div>
         <SiteFooter />

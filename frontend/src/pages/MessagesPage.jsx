@@ -415,8 +415,8 @@ export default function MessagesPage() {
   </div>;
 
   return (
-    <div className="fixed inset-x-0 top-0 bottom-[var(--mobile-nav-height)] overflow-hidden bg-ink text-paper md:static md:h-full md:min-h-0 md:p-5">
-      <div className="mx-auto flex h-full max-w-6xl overflow-hidden bg-ink-soft md:rounded-2xl md:border md:border-ink-line">
+    <div className="fixed inset-x-0 top-0 bottom-[var(--mobile-nav-height)] h-[calc(100dvh-var(--mobile-nav-height))] overflow-hidden bg-ink text-paper md:static md:h-full md:min-h-0 md:p-5">
+      <div className="mx-auto flex h-full max-w-6xl min-h-0 overflow-hidden bg-ink-soft md:rounded-2xl md:border md:border-ink-line">
         <aside className={`h-full w-full shrink-0 flex-col overflow-hidden border-r border-ink-line sm:w-[350px] ${activeUserId && isMobile ? 'hidden' : 'flex'}`}>
           <header className="flex h-[60px] items-center justify-between border-b border-ink-line px-5">
             <h1 className="font-display text-xl">Messages</h1>
