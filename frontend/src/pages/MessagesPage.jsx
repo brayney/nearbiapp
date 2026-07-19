@@ -416,8 +416,8 @@ export default function MessagesPage() {
 
   return (
     <div className="fixed inset-x-0 top-0 bottom-[var(--mobile-nav-height)] overflow-hidden bg-ink text-paper md:static md:h-screen md:p-5">
-      <div className="mx-auto flex h-full max-w-6xl overflow-visible bg-ink-soft md:min-h-[calc(100vh-40px)] md:rounded-2xl md:border md:border-ink-line">
-        <aside className={`h-full w-full shrink-0 flex-col overflow-visible border-r border-ink-line sm:w-[350px] ${activeUserId && isMobile ? 'hidden' : 'flex'}`}>
+      <div className="mx-auto flex h-full max-w-6xl overflow-hidden bg-ink-soft md:min-h-[calc(100vh-40px)] md:rounded-2xl md:border md:border-ink-line">
+        <aside className={`h-full w-full shrink-0 flex-col overflow-hidden border-r border-ink-line sm:w-[350px] ${activeUserId && isMobile ? 'hidden' : 'flex'}`}>
           <header className="flex h-[60px] items-center justify-between border-b border-ink-line px-5">
             <h1 className="font-display text-xl">Messages</h1>
             <button type="button" onClick={() => setMailboxOpen(true)} className="rounded-full p-2 text-slate-faint transition hover:bg-ink hover:text-paper" aria-label="Message folders">
