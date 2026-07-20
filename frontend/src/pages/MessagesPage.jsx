@@ -54,11 +54,37 @@ export default function MessagesPage() {
   const recorderStopResolveRef = useRef(null);
   const voiceFinalizationPromiseRef = useRef(null);
   const voiceFinalizationResolveRef = useRef(null);
+  const messageSyncChannelRef = useRef(null);
+
+  const notifyMessageSync = (payload = {}) => {
+    const eventPayload = {
+      type: 'nearbi:messages-updated',
+      timestamp: Date.now(),
+      ...payload,
+    };
+
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('nearbi:messages-sync', JSON.stringify(eventPayload));
+    }
+
+    messageSyncChannelRef.current?.postMessage(eventPayload);
+  };
 
   const loadConversations = async () => {
     const { data } = await messagesApi.getConversations();
     setConversations(data.conversations || []);
     setFollowing(data.following || []);
+  };
+
+  const refreshConversation = async () => {
+    if (!activeUserId) return;
+    const { data } = await messagesApi.getConversation(activeUserId);
+    setParticipant(data.participant);
+    setMessages(data.messages || []);
+    setConnection(data.connection || {});
+    setNickname(data.connection?.nickname || '');
+    setThreadError('');
+    await loadConversations();
   };
 
   const saveNote = async (event) => {
@@ -81,9 +107,72 @@ export default function MessagesPage() {
   useEffect(() => {
     const resizeListener = () => setIsMobile(window.innerWidth < 640);
     window.addEventListener('resize', resizeListener);
+
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      const channel = new BroadcastChannel('nearbi-message-sync');
+      messageSyncChannelRef.current = channel;
+      channel.onmessage = (event) => {
+        const data = event.data;
+        if (!data || data.type !== 'nearbi:messages-updated') return;
+        if (data.userId && activeUserId && String(data.userId) !== String(activeUserId)) {
+          return;
+        }
+        loadConversations().catch(() => {});
+        if (data.userId && activeUserId) {
+          refreshConversation().catch(() => {});
+        }
+      };
+    }
+
+    const onStorage = (event) => {
+      if (event.key !== 'nearbi:messages-sync' || !event.newValue) return;
+      try {
+        const data = JSON.parse(event.newValue);
+        if (!data || data.type !== 'nearbi:messages-updated') return;
+        if (data.userId && activeUserId && String(data.userId) !== String(activeUserId)) {
+          return;
+        }
+        loadConversations().catch(() => {});
+        if (data.userId && activeUserId) {
+          refreshConversation().catch(() => {});
+        }
+      } catch {
+        // Ignore malformed cross-tab sync payloads.
+      }
+    };
+
+    window.addEventListener('storage', onStorage);
+
     loadConversations().catch(() => dispatch(pushToast('Could not load messages.', 'error'))).finally(() => setLoading(false));
-    return () => window.removeEventListener('resize', resizeListener);
-  }, []);
+
+    const inboxInterval = window.setInterval(() => {
+      loadConversations().catch(() => {});
+    }, 3000);
+
+    return () => {
+      window.removeEventListener('resize', resizeListener);
+      window.removeEventListener('storage', onStorage);
+      window.clearInterval(inboxInterval);
+      messageSyncChannelRef.current?.close();
+      messageSyncChannelRef.current = null;
+    };
+  }, [activeUserId, dispatch]);
+
+  useEffect(() => {
+    if (!activeUserId) return undefined;
+
+    refreshConversation().catch(() => {
+      setParticipant(null);
+      setMessages([]);
+      setThreadError('Could not refresh this conversation.');
+    });
+
+    const interval = window.setInterval(() => {
+      refreshConversation().catch(() => {});
+    }, 3000);
+
+    return () => window.clearInterval(interval);
+  }, [activeUserId, dispatch]);
 
   useEffect(() => {
     if (currentUser?.note) {
@@ -95,9 +184,16 @@ export default function MessagesPage() {
     if (!activeUserId) return;
     setThreadError('');
     messagesApi.getConversation(activeUserId)
-      .then(({ data }) => { setParticipant(data.participant); setMessages(data.messages || []); setConnection(data.connection || {}); setNickname(data.connection?.nickname || ''); loadConversations().catch(() => {}); })
+      .then(({ data }) => {
+        setParticipant(data.participant);
+        setMessages(data.messages || []);
+        setConnection(data.connection || {});
+        setNickname(data.connection?.nickname || '');
+        loadConversations().catch(() => {});
+        notifyMessageSync({ userId: activeUserId, reason: 'opened' });
+      })
       .catch((err) => { const error = err.response?.data?.message || 'Could not open this conversation.'; setParticipant(null); setMessages([]); setThreadError(error); dispatch(pushToast(error, 'error')); });
-  }, [activeUserId]);
+  }, [activeUserId, dispatch]);
 
   useEffect(() => {
     // Do not return scrollIntoView's browser-specific result: React reserves
@@ -131,6 +227,7 @@ export default function MessagesPage() {
       setMessages((items) => [...items, data.message]);
       setMediaFile(null);
       await loadConversations();
+      notifyMessageSync({ userId: activeUserId, reason: 'sent' });
     } catch (err) {
       setDraft(text);
       dispatch(pushToast(err.response?.data?.message || 'Message could not be sent.', 'error'));

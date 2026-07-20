@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { usersApi } from './api/resources';
-import { fetchMe, forceLogout } from './features/auth/authSlice';
+import { clearAuthError, fetchMe, forceLogout } from './features/auth/authSlice';
 import ProtectedRoute from './components/ProtectedRoute';
 import AppShell from './components/AppShell';
 import ToastStack from './components/ToastStack';
@@ -28,6 +28,11 @@ import NotificationsPage from './pages/NotificationsPage';
 export default function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    dispatch(clearAuthError());
+  }, [location.pathname, dispatch]);
 
   useEffect(() => {
     dispatch(fetchMe());

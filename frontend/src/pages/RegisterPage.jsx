@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from './AuthLayout';
@@ -18,6 +18,10 @@ export default function RegisterPage() {
   });
   const [stepError, setStepError] = useState('');
   const age = form.birthday ? calculateAge(form.birthday) : '';
+
+  useEffect(() => {
+    dispatch(clearAuthError());
+  }, [dispatch]);
 
   const update = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
