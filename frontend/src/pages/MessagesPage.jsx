@@ -414,6 +414,9 @@ export default function MessagesPage() {
     }
   };
 
+  const currentUserId = String(currentUser?.id || currentUser?._id || '');
+  const lastReadMessage = [...messages].reverse().find((message) => String(message.sender) === currentUserId && message.readAt);
+
   const activeName = connection.nickname || participant?.displayName || participant?.username || 'Conversation';
   let body = <EmptyThread />;
   if (activeUserId && threadError) body = <div className="m-auto max-w-sm px-6 text-center"><p className="font-semibold">Conversation unavailable</p><p className="mt-2 text-sm text-slate-faint">{threadError}</p></div>;
@@ -446,10 +449,11 @@ export default function MessagesPage() {
     <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5 sm:py-5">
       <div className="space-y-3">
         {messages.map((message) => {
-          const own = String(message.sender) === String(currentUser?.id || currentUser?._id);
+          const own = String(message.sender) === currentUserId;
           const isExpanded = expandedMessageId === message._id;
           const sender = own ? currentUser : participant;
           const seen = Boolean(own && message.readAt);
+          const showSeenAvatar = own && seen && lastReadMessage?._id === message._id;
           return (
             <div key={message._id} className={`flex items-end gap-2 ${own ? 'justify-end' : 'justify-start'}`}>
               {!own && <Avatar src={sender?.profilePicture?.url} alt={sender?.username} size="xs" />}
@@ -466,14 +470,19 @@ export default function MessagesPage() {
                   ))}
                   {message.text && <p className="break-words">{message.text}</p>}
                 </div>
-                {isExpanded && (
-                  <div className={`mt-1 flex ${own ? 'justify-end' : 'justify-start'}`}>
-                    <p className={`px-2 text-[10px] ${own ? 'text-right text-slate-faint' : 'text-slate-faint'}`}>{formatTime(message.createdAt)}</p>
-                    {own && seen && (
-                      <div className="ml-1 h-4 w-4 overflow-hidden rounded-full border border-ink bg-ink-soft">
-                        <Avatar src={participant?.profilePicture?.url} alt={participant?.username} size="xs" />
-                      </div>
-                    )}
+                <div className={`mt-1 flex ${own ? 'justify-end' : 'justify-start'}`}>
+                  <p className={`px-2 text-[10px] ${own ? 'text-right text-slate-faint' : 'text-slate-faint'}`}>{formatTime(message.createdAt)}</p>
+                  {showSeenAvatar && (
+                    <div className="ml-1 h-4 w-4 overflow-hidden rounded-full border border-ink bg-ink-soft">
+                      <Avatar src={participant?.profilePicture?.url} alt={participant?.username} size="xs" />
+                    </div>
+                  )}
+                </div>
+                {isExpanded && own && seen && !showSeenAvatar && (
+                  <div className="mt-1 flex justify-end">
+                    <div className="h-4 w-4 overflow-hidden rounded-full border border-ink bg-ink-soft">
+                      <Avatar src={participant?.profilePicture?.url} alt={participant?.username} size="xs" />
+                    </div>
                   </div>
                 )}
               </div>
