@@ -287,11 +287,13 @@ export default function MessagesPage() {
   };
 
   const startVoiceRecording = async () => {
+    if (recordingVoice) return;
     if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
       dispatch(pushToast('Voice recording is not supported by this browser.', 'error'));
       return;
     }
     try {
+      sendVoiceWhenReadyRef.current = false;
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true, noiseSuppression: true, echoCancellation: true });
       const mimeType = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'].find((type) => MediaRecorder.isTypeSupported(type)) || '';
       const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
@@ -345,6 +347,8 @@ export default function MessagesPage() {
 
   const stopVoiceRecording = async () => {
     const recorder = recorderRef.current;
+    if (!recordingVoice) return;
+
     sendVoiceWhenReadyRef.current = true;
 
     if (recorder?.state === 'recording') {
@@ -366,6 +370,16 @@ export default function MessagesPage() {
     setRecordingVoice(false);
     setVoiceLevels(Array(22).fill(0.14));
     await finalizeVoiceRecording();
+  };
+
+  const handleVoicePressStart = async () => {
+    if (recordingVoice) return;
+    await startVoiceRecording();
+  };
+
+  const handleVoicePressEnd = async () => {
+    if (!recordingVoice) return;
+    await stopVoiceRecording();
   };
 
   const updateConnection = async (payload, successMessage) => {
@@ -499,7 +513,10 @@ export default function MessagesPage() {
         )}
         <button
           type="button"
-          onClick={recordingVoice ? stopVoiceRecording : startVoiceRecording}
+          onPointerDown={handleVoicePressStart}
+          onPointerUp={handleVoicePressEnd}
+          onPointerLeave={handleVoicePressEnd}
+          onPointerCancel={handleVoicePressEnd}
           className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition ${recordingVoice ? 'bg-coral text-ink animate-pulse' : 'bg-ink-soft text-slate-faint hover:text-paper'}`}
           aria-label={recordingVoice ? 'Stop voice recording' : 'Record voice message'}
         >
