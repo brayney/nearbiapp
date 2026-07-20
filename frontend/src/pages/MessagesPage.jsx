@@ -345,6 +345,8 @@ export default function MessagesPage() {
 
   const stopVoiceRecording = async () => {
     const recorder = recorderRef.current;
+    sendVoiceWhenReadyRef.current = true;
+
     if (recorder?.state === 'recording') {
       try {
         recorder.requestData();
