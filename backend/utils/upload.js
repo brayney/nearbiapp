@@ -27,28 +27,10 @@ const storage = new CloudinaryStorage({
   params: {
     folder: 'social-app',
     resource_type: 'auto',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif', 'avif', 'mp4', 'mov', 'webm', 'mp3', 'wav', 'ogg', 'm4a', 'pdf', 'txt', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'],
   },
 });
 
 const ALLOWED_MIME = [
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-  'image/heic',
-  'image/heif',
-  'image/avif',
-  'video/mp4',
-  'video/quicktime',
-  'video/webm',
-  'video/3gpp',
-  'video/3gpp2',
-  'audio/mpeg',
-  'audio/wav',
-  'audio/ogg',
-  'audio/webm',
-  'audio/mp4',
   'application/pdf',
   'text/plain',
   'application/msword',
@@ -64,14 +46,21 @@ function fileFilter(req, file, cb) {
   // `audio/webm;codecs=opus`). Multer preserves that value, so compare the
   // base MIME type instead of rejecting otherwise-valid voice recordings.
   const mimeType = file.mimetype.split(';', 1)[0].toLowerCase();
-  if (ALLOWED_MIME.includes(mimeType)) return cb(null, true);
+  const isImage = mimeType.startsWith('image/');
+  const isVideo = mimeType.startsWith('video/');
+  const isAudio = mimeType.startsWith('audio/');
+
+  if (isImage || isVideo || isAudio || ALLOWED_MIME.includes(mimeType)) {
+    return cb(null, true);
+  }
+
   cb(new Error(`Unsupported file type: ${file.mimetype}`), false);
 }
 
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 100 * 1024 * 1024, files: 12 }, // 100MB per file, max 12 files
+  limits: { fileSize: 250 * 1024 * 1024, files: 12 }, // 250MB per file, max 12 files
 });
 
 function normalizeUploadedFile(file) {

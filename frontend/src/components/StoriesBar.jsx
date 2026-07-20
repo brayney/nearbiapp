@@ -6,8 +6,6 @@ import Avatar from './Avatar';
 import { storiesApi } from '../api/resources';
 import { pushToast } from '../features/ui/uiSlice';
 
-const MAX_MEDIA_SIZE = 100 * 1024 * 1024; // 100MB
-
 export default function StoriesBar() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -23,11 +21,6 @@ export default function StoriesBar() {
   const handleMediaChange = (event) => {
     const file = event.target.files?.[0] || null;
     if (!file) return;
-    if (file.size > MAX_MEDIA_SIZE) {
-      dispatch(pushToast('Story media must be under 100MB.', 'error'));
-      setMedia(null);
-      return;
-    }
     setMedia(file);
   };
 
@@ -113,8 +106,8 @@ export default function StoriesBar() {
           <form onSubmit={createStory} onMouseDown={(event) => event.stopPropagation()} className="mx-auto flex w-full max-w-md max-h-[calc(100vh-3rem)] flex-col overflow-y-auto rounded-2xl border border-ink-line bg-ink p-5">
             <div className="mb-4 flex items-center justify-between"><h2 className="font-display text-xl">Add to your story</h2><button type="button" onClick={closeComposer} className="rounded-full p-2 text-slate-faint hover:bg-ink-soft"><X size={18} /></button></div>
             <textarea value={text} onChange={(event) => setText(event.target.value)} maxLength={280} rows={4} placeholder="Share something…" className="w-full resize-none rounded-xl border border-ink-line bg-ink-soft p-3 text-sm outline-none focus:border-teal-bright" />
-            <label className="mt-3 flex cursor-pointer items-center gap-2 rounded-xl border border-ink-line px-3 py-2 text-sm text-slate-faint hover:bg-ink-soft"><Image size={18} />{media ? media.name : 'Add photo or video'}<input type="file" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime,video/webm" className="hidden" onChange={handleMediaChange} /></label>
-            <p className="mt-2 text-xs text-slate-faint">Max 100MB video or image</p>
+            <label className="mt-3 flex cursor-pointer items-center gap-2 rounded-xl border border-ink-line px-3 py-2 text-sm text-slate-faint hover:bg-ink-soft"><Image size={18} />{media ? media.name : 'Add photo or video'}<input type="file" accept="image/*,video/*,audio/*,.pdf,.txt,.doc,.docx,.xls,.xlsx,.ppt,.pptx" className="hidden" onChange={handleMediaChange} /></label>
+            <p className="mt-2 text-xs text-slate-faint">Photo and video uploads are supported up to the server limit.</p>
             <button type="submit" disabled={saving || (!text.trim() && !media)} className="mt-4 w-full rounded-xl bg-coral py-2.5 font-semibold text-ink disabled:opacity-50">{saving ? 'Sharing…' : 'Share story'}</button>
           </form>
         </div>

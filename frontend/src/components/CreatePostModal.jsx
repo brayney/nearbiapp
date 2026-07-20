@@ -188,7 +188,7 @@ export default function CreatePostModal() {
           <label className="flex items-center gap-2 text-slate-faint hover:text-paper cursor-pointer text-sm font-medium">
             <ImageIcon size={18} />
             Add photos or video
-            <input type="file" accept="image/*,image/heic,image/heif,image/avif,video/*,video/3gpp,video/3gpp2" multiple hidden onChange={handleFiles} />
+            <input type="file" accept="image/*,video/*,audio/*,.pdf,.txt,.doc,.docx,.xls,.xlsx,.ppt,.pptx" multiple hidden onChange={handleFiles} />
           </label>
         </div>
 

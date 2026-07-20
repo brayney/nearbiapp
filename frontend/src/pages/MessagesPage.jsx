@@ -499,7 +499,7 @@ export default function MessagesPage() {
           <Image size={18} />
           <input
             type="file"
-            accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime,video/webm,audio/mpeg,audio/wav,audio/ogg,audio/webm,audio/mp4,application/pdf,text/plain,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+            accept="image/*,video/*,audio/*,.pdf,.txt,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
             className="hidden"
             onChange={(event) => setMediaFile(event.target.files?.[0] || null)}
           />

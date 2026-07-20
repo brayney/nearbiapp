@@ -125,7 +125,7 @@ function ProfileTab({ user, dispatch }) {
           </span>
           <input
             type="file"
-            accept="image/jpeg,image/png,image/gif,image/webp"
+            accept="image/*,.heic,.heif,.avif"
             onChange={handleAvatarChange}
             disabled={avatarUploading}
             className="sr-only"
