@@ -134,7 +134,6 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
     status: messageStatus,
     media: uploaded ? { url: uploaded.url, publicId: uploaded.publicId, type: uploaded.type } : undefined,
   });
-  await createNotification({ type: 'message', actor: req.user, recipient, message: `${req.user.username} sent you a message.` });
   res.status(201).json({ success: true, message });
 });
 

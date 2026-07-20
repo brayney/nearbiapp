@@ -152,11 +152,11 @@ export default function AppShell() {
       </aside>
 
       {/* Main content */}
-      <main className={`flex min-h-[100dvh] min-w-0 flex-1 flex-col ${isMessagesRoute ? 'overflow-hidden' : 'overflow-y-auto'} pb-[calc(var(--mobile-nav-height)+1rem)] md:h-screen md:min-h-0 md:pb-0`}>
-        <div className="flex-1 min-h-0">
+      <main className="flex min-h-[100dvh] min-w-0 flex-1 flex-col overflow-hidden pb-[calc(var(--mobile-nav-height)+1rem)] md:h-screen md:min-h-0 md:pb-0">
+        <div className={`flex-1 min-h-0 ${isMessagesRoute ? 'overflow-hidden' : 'overflow-y-auto'}`}>
           <Outlet />
         </div>
-        <SiteFooter />
+        <SiteFooter className="shrink-0" />
       </main>
 
       {/* Mobile floating create button */}
